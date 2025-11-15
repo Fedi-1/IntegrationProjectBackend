@@ -1,21 +1,14 @@
-# Use OpenJDK 21 as the base image
-FROM openjdk:21-jdk-slim
+# Use official Eclipse Temurin JDK 21 image
+FROM eclipse-temurin:21-jdk-focal
 
-# Set working directory
+# Set working directory inside container
 WORKDIR /app
 
-# Copy Maven configuration and source code
-COPY pom.xml .
-COPY src ./src
+# Copy Maven-built JAR into the container
+COPY target/IntegrationProjectBackend-0.0.1-SNAPSHOT.jar app.jar
 
-# Install Maven, build the app, then remove Maven to save space
-RUN apt-get update && apt-get install -y maven \
-    && mvn clean package -DskipTests \
-    && apt-get remove -y maven \
-    && rm -rf /var/lib/apt/lists/*
+# Expose port your Spring Boot app runs on (default 8080)
+EXPOSE 5069
 
-# Expose the port Spring Boot runs on
-EXPOSE 8080
-
-# Command to run your backend
-CMD ["java", "-jar", "target/IntegrationProjectBackend-0.0.1-SNAPSHOT.jar"]
+# Run the Spring Boot JAR
+ENTRYPOINT ["java", "-jar", "app.jar"]
