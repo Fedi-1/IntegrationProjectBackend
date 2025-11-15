@@ -1,0 +1,172 @@
+Compiled from "ScheduleGeneratorService.java"
+public class com.example.IntegrationProjectBackend.services.ScheduleGeneratorService {
+  public com.example.IntegrationProjectBackend.services.ScheduleGeneratorService();
+    LineNumberTable:
+      line 19: 0
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0       5     0  this   Lcom/example/IntegrationProjectBackend/services/ScheduleGeneratorService;
+
+  public com.example.IntegrationProjectBackend.dtos.ScheduleGenerationResponse generateSchedule(java.lang.String, com.example.IntegrationProjectBackend.dtos.ScheduleGenerationRequest);
+    LineNumberTable:
+      line 39: 0
+      line 42: 12
+      line 43: 28
+      line 46: 35
+      line 47: 44
+      line 48: 77
+      line 49: 86
+      line 50: 101
+      line 51: 116
+      line 52: 131
+      line 53: 141
+      line 56: 144
+      line 57: 153
+      line 58: 167
+      line 61: 179
+      line 62: 187
+      line 65: 207
+      line 69: 215
+      line 71: 222
+      line 72: 226
+      line 74: 236
+      line 75: 241
+      line 79: 248
+      line 82: 258
+      line 85: 266
+      line 88: 275
+      line 91: 283
+      line 92: 291
+      line 97: 304
+      line 98: 305
+      line 99: 320
+      line 100: 324
+      line 102: 330
+      line 100: 342
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+         86      55     7 subjectMap   Ljava/util/Map;
+         77      64     6 subjectRequest   Lcom/example/IntegrationProjectBackend/dtos/ScheduleGenerationRequest$SubjectInfo;
+         35     269     3 student   Lcom/example/IntegrationProjectBackend/models/Student;
+         44     260     4 subjectsData   Ljava/util/List;
+        153     151     5 preferences   Ljava/util/Map;
+        207      97     6 aiResponse   Ljava/lang/Object;
+        222      82     7 aiResponseMap   Ljava/util/Map;
+        236      68     8 scheduleData   Ljava/util/Map;
+        266      38     9 sessionId   Ljava/lang/String;
+        283      21    10 responseSchedule   Ljava/util/Map;
+        305      38     3     e   Ljava/lang/Exception;
+          0     343     0  this   Lcom/example/IntegrationProjectBackend/services/ScheduleGeneratorService;
+          0     343     1 studentCin   Ljava/lang/String;
+          0     343     2 request   Lcom/example/IntegrationProjectBackend/dtos/ScheduleGenerationRequest;
+
+  public java.util.Map<java.lang.String, java.util.Map<java.lang.String, com.example.IntegrationProjectBackend.dtos.ScheduleGenerationResponse$ActivityBlock>> getStudentSchedule(java.lang.String);
+    LineNumberTable:
+      line 180: 0
+      line 181: 16
+      line 183: 23
+      line 185: 34
+      line 187: 43
+      line 188: 73
+      line 189: 80
+      line 191: 97
+      line 192: 106
+      line 193: 116
+      line 194: 126
+      line 195: 151
+      line 197: 161
+      line 198: 186
+      line 200: 189
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+         80     106     7   day   Ljava/lang/String;
+        106      80     8 block   Lcom/example/IntegrationProjectBackend/dtos/ScheduleGenerationResponse$ActivityBlock;
+         73     113     6 schedule   Lcom/example/IntegrationProjectBackend/models/GeneratedSchedule;
+          0     192     0  this   Lcom/example/IntegrationProjectBackend/services/ScheduleGeneratorService;
+          0     192     1 studentCin   Ljava/lang/String;
+         23     169     2 student   Lcom/example/IntegrationProjectBackend/models/Student;
+         34     158     3 schedules   Ljava/util/List;
+         43     149     4 result   Ljava/util/Map;
+
+  public void deleteStudentSchedule(java.lang.String);
+    LineNumberTable:
+      line 208: 0
+      line 209: 16
+      line 211: 23
+      line 212: 33
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0      34     0  this   Lcom/example/IntegrationProjectBackend/services/ScheduleGeneratorService;
+          0      34     1 studentCin   Ljava/lang/String;
+         23      11     2 student   Lcom/example/IntegrationProjectBackend/models/Student;
+
+  public com.example.IntegrationProjectBackend.dtos.ScheduleGenerationResponse generateScheduleFromPdf(java.lang.String, org.springframework.web.multipart.MultipartFile, java.lang.Integer);
+    LineNumberTable:
+      line 222: 0
+      line 225: 12
+      line 226: 28
+      line 229: 36
+      line 230: 45
+      line 232: 52
+      line 233: 68
+      line 239: 81
+      line 240: 92
+      line 239: 106
+      line 243: 109
+      line 244: 118
+      line 246: 129
+      line 247: 144
+      line 254: 157
+      line 255: 166
+      line 256: 177
+      line 259: 189
+      line 260: 198
+      line 264: 215
+      line 267: 222
+      line 270: 233
+      line 271: 236
+      line 270: 260
+      line 273: 263
+      line 275: 271
+      line 276: 285
+      line 278: 293
+      line 279: 303
+      line 281: 327
+      line 283: 337
+      line 284: 346
+      line 285: 349
+      line 284: 373
+      line 286: 376
+      line 293: 389
+      line 296: 400
+      line 299: 408
+      line 302: 418
+      line 305: 426
+      line 306: 435
+      line 311: 449
+      line 312: 451
+      line 313: 467
+      line 314: 472
+      line 316: 479
+      line 314: 491
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+        282       3    11 scheduleData   Ljava/util/Map;
+        300       3    11 scheduleData   Ljava/util/Map;
+        334       3    11 scheduleData   Ljava/util/Map;
+         36     413     4 student   Lcom/example/IntegrationProjectBackend/models/Student;
+         52     397     5 pdfContent   Ljava/lang/String;
+        129     320     6 extractedSubjects   Ljava/util/List;
+        166     283     7 preferences   Ljava/util/Map;
+        215     234     8 aiResponse   Ljava/lang/Object;
+        222     227     9 aiResponseMap   Ljava/util/Map;
+        233     216    10 scheduleField   Ljava/lang/Object;
+        389      60    11 scheduleData   Ljava/util/Map;
+        408      41    12 sessionId   Ljava/lang/String;
+        426      23    13 responseSchedule   Ljava/util/Map;
+        451      41     4     e   Ljava/lang/Exception;
+          0     492     0  this   Lcom/example/IntegrationProjectBackend/services/ScheduleGeneratorService;
+          0     492     1 studentCin   Ljava/lang/String;
+          0     492     2  file   Lorg/springframework/web/multipart/MultipartFile;
+          0     492     3 maxStudyDuration   Ljava/lang/Integer;
+}
