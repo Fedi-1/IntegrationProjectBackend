@@ -33,4 +33,4 @@ build/
 .vscode/
 
 ### Application Properties with API Keys ###
-src/main/resources/application.properties
+.env
