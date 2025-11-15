@@ -1,0 +1,35 @@
+# Ignore build output
+target/
+*.jar
+*.war
+*.ear
+
+# Ignore IDE files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+.settings/
+
+# Ignore Git
+.git/
+.gitignore
+.gitattributes
+
+# Ignore documentation
+*.md
+HELP.md
+*.log
+
+# Ignore environment files
+.env
+.env.example
+
+# Ignore test files
+src/test/
+
+# Ignore Maven wrapper jar (will be downloaded in Dockerfile)
+.mvn/wrapper/maven-wrapper.jar
