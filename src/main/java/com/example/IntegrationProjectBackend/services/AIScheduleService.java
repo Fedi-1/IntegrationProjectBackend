@@ -277,22 +277,111 @@ public class AIScheduleService {
                         NOW ANALYZE THIS TIMETABLE:
                         %s
 
-                        ⚠️ BEFORE YOU START:
-                        - Look at the ENTIRE timetable text above
-                        - You will find courses scattered throughout the text (morning AND afternoon slots)
-                        - Don't just look at 15:00-18:00 slots - scan 08:00-18:00 for EACH day
-                        - Days have DIFFERENT end times - don't assume they're all the same!
+                        🚨🚨🚨 CRITICAL: UNDERSTANDING THE 6-COLUMN GRID LAYOUT 🚨🚨🚨
 
-                        🚨 CRITICAL ALGORITHM - Follow these EXACT steps:
+                        The timetable is a **GRID with EXACTLY 6 COLUMNS** (left to right):
 
-                        For EACH day (Lundi, Mardi, Mercredi, Jeudi, Vendredi, Samedi):
+                        ```
+                        Column 1  Column 2  Column 3     Column 4  Column 5     Column 6
+                        --------  --------  ----------   --------  ----------   --------
+                        Lundi     Mardi     Mercredi     Jeudi     Vendredi     Samedi
+                        03/11     04/11     05/11        06/11     07/11        08/11
 
-                        **STEP 1: List ALL course boxes in that day**
-                        - Scan the entire day column from top to bottom
-                        - Identify EVERY course box (has course name + professor + room + times)
-                        - Don't stop after finding one box - find ALL boxes for that day!
+                        Row 1:  [Course]  [Course]  [Course]     [Course]  [Course]     [empty]
+                        Row 2:  [Course]  [empty]   [Course]     [Course]  [Course]     [empty]
+                        Row 3:  [Course]  [Course]  [empty]      [Course]  [Course]     [empty]
+                        Row 4:  [Course]  [Course]  [GAP/empty]  [Course]  [Course]     [empty]
+                        Row 5:  [Course]  [Course]  [Course]     [Course]  [Course]     [empty]
+                        ```
 
-                        **STEP 2: For EACH course box, extract the END time**
+                        🔑 **CRITICAL UNDERSTANDING:**
+                        - When PDF text is extracted, it reads **LEFT TO RIGHT, ROW BY ROW**
+                        - Example reading order: Lundi-course-1, Mardi-course-1, Mercredi-course-1, Jeudi-course-1, Vendredi-course-1, Samedi-empty, then next row...
+                        - You see courses in GROUPS OF 6 (one per day) as you read through rows
+
+                        🚨 **THE PATTERN YOU MUST RECOGNIZE:**
+
+                        When you see course names appearing in sequence, they are in COLUMN ORDER:
+                        ```
+                        Text extraction reads like this:
+
+                        "Lundi Mardi Mercredi Jeudi Vendredi Samedi"  ← Day headers (row 0)
+                        "03/11 04/11 05/11 06/11 07/11 08/11"          ← Dates (row 0)
+
+                        "CourseA  CourseB  CourseC  CourseD  CourseE  [empty]"  ← Row 1: 08:00-09:00 slot
+                         08:15    08:15    08:15    10:00    10:00
+                         11:15    09:45    09:45    11:30    11:30
+                         ↑        ↑        ↑        ↑        ↑
+                         Monday   Tuesday  Wednesday Thursday Friday
+
+                        "CourseX  [empty]  CourseY  CourseZ  CourseW  [empty]"  ← Row 2: 10:00-11:00 slot
+                         10:00             10:00    11:30    13:30
+                         11:30             11:30    13:00    15:00
+                         ↑                 ↑        ↑        ↑
+                         Monday            Wednesday Thursday Friday
+                        ```
+
+                        🚨 **KEY RULE: COUNT POSITIONS IN EACH ROW**
+                        - 1st course in a row = Monday
+                        - 2nd course/item = Tuesday
+                        - 3rd course/item = Wednesday
+                        - 4th course/item = Thursday
+                        - 5th course/item = Friday
+                        - 6th course/item = Saturday                        🚨 CRITICAL ALGORITHM - Use COLUMN COUNTING:
+
+                        **METHOD: Analyze courses by their POSITION in the text flow**
+
+                        **STEP 1: Identify the 6-column pattern**
+                        - The PDF text flows: Course1 Course2 Course3 Course4 Course5 Course6, then repeats for next time slot
+                        - Position 1 (leftmost) = Monday
+                        - Position 2 = Tuesday
+                        - Position 3 = Wednesday
+                        - Position 4 = Thursday
+                        - Position 5 = Friday
+                        - Position 6 (rightmost) = Saturday
+
+                        **STEP 2: For EACH course you encounter, determine which column it's in**
+
+                        Method A - Look for day name BEFORE the course:
+                        - If "Lundi" or "Monday" appears before → Monday course
+                        - If "Mardi" or "Tuesday" appears before → Tuesday course
+                        - If "Mercredi" or "Wednesday" appears before → Wednesday course
+                        - If "Jeudi" or "Thursday" appears before → Thursday course
+                        - If "Vendredi" or "Friday" appears before → Friday course
+                        - If "Samedi" or "Saturday" appears before → Saturday course
+
+                        Method B - Count position in grouped courses:
+                        - Courses appear in groups as you scan through time slots
+                        - The 1st, 7th, 13th, 19th... course = Monday
+                        - The 2nd, 8th, 14th, 20th... course = Tuesday
+                        - The 3rd, 9th, 15th, 21st... course = Wednesday
+                        - And so on (every 6th course in sequence)
+
+                        **STEP 3: Group courses by day and extract end times**
+                        - For Monday: Collect ALL courses identified as position 1 (Monday column)
+                        - For Tuesday: Collect ALL courses identified as position 2 (Tuesday column)
+                        - For each day, extract the END time (second/bottom time) from each course box
+                        - Return the MAXIMUM end time for each day
+
+                        🔑 **HANDLING GAPS/EMPTY SLOTS:**
+                        ```
+                        Example for Tuesday:
+
+                        Mardi
+                        Course 1: 08:15-09:45 (ends 09:45)
+                        Course 2: 10:00-11:30 (ends 11:30)
+                        Course 3: 13:30-15:00 (ends 15:00)
+                        [EMPTY SLOT: 15:00-16:45 - NO COURSE HERE]  ← Don't stop! Keep scanning!
+                        Course 4: 16:45-18:15 (ends 18:15) ← Found another course!
+
+                        Collected: [09:45, 11:30, 15:00, 18:15]
+                        Maximum: 18:15 ✅ (NOT 15:00!)
+                        ```
+
+                        ❌ WRONG: Stop scanning at 15:00 because there's a gap
+                        ✅ CORRECT: Continue scanning through empty slots until next day header
+
+                        **STEP 3: For EACH course box, extract the END time**
                         - Each box has TWO times (one above the other)
                         - Pattern in box:
                           ```
@@ -309,9 +398,58 @@ public class AIScheduleService {
                         - Compare ALL end times you extracted
                         - Return the MAXIMUM (latest) one
 
-                        **EXAMPLE - Analyzing Monday:**
+                        **EXAMPLE - Reading the 6-column layout:**
                         ```
-                        Monday column contains:
+                        PDF text extracted line by line:
+
+                        Line: "Lundi Mardi Mercredi Jeudi Vendredi Samedi"
+                        → Day headers (ignore, just for reference)
+
+                        Line: "Atelier Test  Atelier Chaines  Méthodologie  Développement  Preparing  [empty]"
+                        → Row 1 courses (8:00-11:00 slot approximately)
+                        → Position 1 = Monday: "Atelier Test" ends at ?
+                        → Position 2 = Tuesday: "Atelier Chaines" ends at ?
+                        → Position 3 = Wednesday: "Méthodologie" ends at 09:45
+                        → Position 4 = Thursday: "Développement" ends at ?
+                        → Position 5 = Friday: "Preparing TOEIC" ends at ?
+                        → Position 6 = Saturday: empty
+
+                        Line: "[empty]  Gestion données  SOA  Atelier Mobile  Réalité  [empty]"
+                        → Row 2 courses (10:00-13:00 slot approximately)
+                        → Position 1 = Monday: empty
+                        → Position 2 = Tuesday: "Gestion données" ends at ?
+                        → Position 3 = Wednesday: "SOA" ends at 11:30
+                        → Position 4 = Thursday: "Atelier Mobile" ends at ?
+                        → Position 5 = Friday: "Réalité" ends at ?
+                        → Position 6 = Saturday: empty
+
+                        Line: "[empty]  [empty]  [empty]  Atelier Mobile  [empty]  [empty]"
+                        → Row 3 courses (13:00-15:00 slot)
+                        → Position 4 = Thursday: "Atelier Mobile" ends at 15:00
+
+                        Line: "Atelier Test  [GAP]  [empty]  Atelier Framework  Base Données  [empty]"
+                        → Row 4 courses (15:00-18:00 slot)
+                        → Position 1 = Monday: "Atelier Test" ends at 18:00 ← Monday max!
+                        → Position 2 = Tuesday: GAP (keep scanning!)
+                        → Position 4 = Thursday: "Atelier Framework" ends at 18:00
+                        → Position 5 = Friday: "Base Données" ends at 18:00
+
+                        Line: "[empty]  Atelier  [empty]  [empty]  [empty]  [empty]"
+                        → Row 5 courses (16:45-18:15 slot)
+                        → Position 2 = Tuesday: "Atelier" ends at 18:15 ← Tuesday max! (after gap!)
+
+                        **FINAL ANALYSIS:**
+                        Monday: max(18:00) = 18:00
+                        Tuesday: max(?, ?, 18:15) = 18:15 (found after gap!)
+                        Wednesday: max(09:45, 11:30) = 11:30
+                        Thursday: max(?, 15:00, 18:00) = 18:00
+                        Friday: max(?, ?, 18:00) = 18:00
+                        Saturday: 09:00 (empty)
+                        ```
+
+                        **EXAMPLE - Complete analysis for Monday:**
+                        ```
+                        Monday section (from "Lundi" to "Mardi"):
 
                         Box 1:
                         Atelier Développement Mobile
@@ -334,7 +472,9 @@ public class AIScheduleService {
                         13:30  ← START
                         16:30  ← END ✓ Extract: 16:30
 
-                        Collected end times: [11:15, 13:00, 16:30]
+                        [Now we see "Mardi" header → STOP, don't include Tuesday courses!]
+
+                        Collected end times FOR MONDAY ONLY: [11:15, 13:00, 16:30]
                         Maximum: 16:30 ⭐
 
                         ANSWER: "Lundi": "16:30"
@@ -344,35 +484,62 @@ public class AIScheduleService {
                         - If NO course boxes found in entire day → return "09:00"
                         - Saturday is often empty
 
-                        🚨 **COMMON MISTAKE TO AVOID**:
-                        ❌ DON'T just look at afternoon slots (15:00-18:00)
-                        ❌ DON'T assume all days end at 18:00
-                        ✅ DO scan the ENTIRE day from morning to evening
-                        ✅ DO extract end times from EVERY course box you find
-                        ✅ DO return the MAXIMUM of all end times                        CRITICAL RULES:
+                        🚨 **MOST COMMON MISTAKE - MIXING DAYS**:
+                        ❌ WRONG: Seeing "Mercredi" then including Thursday's courses in Wednesday's analysis
+                        ❌ WRONG: Continuing to read courses past the next day's header
+                        ✅ CORRECT: Stop at each day's header and analyze ONLY that day's section
+                        ✅ CORRECT: Track which day you're analyzing - don't mix course boxes from different days
 
-                        🚨 **CRITICAL REMINDERS**:
-                        - Each day can have MULTIPLE course boxes (morning + afternoon)
-                        - You MUST extract end times from ALL boxes, not just afternoon ones
-                        - The answer is the MAXIMUM of all end times you find
-                        - If you find only 18:00 for all weekdays, you're missing earlier courses!
-                        - Some days end early (11:30, 13:00, 15:00) - don't assume 18:00!
+                        Example of WRONG analysis:
+                        ```
+                        Mercredi (should have 2 courses):
+                        ❌ Course 1: 08:15-09:45
+                        ❌ Course 2: 10:00-11:30
+                        ❌ Course 3: 10:00-11:30  ← This is from Jeudi! WRONG!
+                        ❌ Course 4: 15:00-18:00  ← This is also from Jeudi! WRONG!
+                        ```
+
+                        Example of CORRECT analysis:
+                        ```
+                        Mercredi (2 courses only):
+                        ✅ Course 1: 08:15-09:45 (ends 09:45)
+                        ✅ Course 2: 10:00-11:30 (ends 11:30)
+                        [STOP here - "Jeudi" header found]
+                        Maximum: 11:30 ← CORRECT!
+
+                        Jeudi (analyze separately):
+                        ✅ Course 1: 10:00-11:30 (ends 11:30)
+                        ✅ Course 2: 11:30-13:00 (ends 13:00)
+                        ✅ Course 3: 13:30-15:00 (ends 15:00)
+                        ✅ Course 4: 15:00-18:00 (ends 18:00)
+                        Maximum: 18:00 ← CORRECT!
+                        ```
+
+                        🚨 **OTHER CRITICAL REMINDERS**:
+                        - Each day can have DIFFERENT numbers of courses (1-5 courses)
+                        - Days can have GAPS (empty slots) between courses - this is NORMAL
+                        - ⚠️ **GAPS DON'T MEAN THE DAY ENDS** - keep scanning until next day header!
+                        - You MUST extract end times from ALL boxes in that day's section ONLY
+                        - The answer is the MAXIMUM of all end times for THAT DAY
+                        - If you find only 18:00 for all weekdays, you're mixing days!
+                        - Some days end early (09:45, 11:30, 15:00) but some have late courses after gaps (18:15, 18:30)!
 
                         📋 MORE EXAMPLES:
 
-                        📌 Example A - Day with morning AND afternoon courses:
+                        📌 Example A - Day with GAP between courses:
                         ```
-                        Tuesday column:
+                        Tuesday section (from "Mardi" to "Mercredi"):
                         - Box 1: 08:15 → 09:45 (ends 09:45)
                         - Box 2: 10:00 → 11:30 (ends 11:30)
-                        - Box 3: 11:30 → 13:00 (ends 13:00)
-                        - Box 4: 13:30 → 15:00 (ends 15:00) ← MAXIMUM!
+                        - Box 3: 13:30 → 15:00 (ends 15:00)
+                        - [GAP: 15:00-16:45 EMPTY SLOT] ← Don't stop here! Keep scanning!
+                        - Box 4: 16:45 → 18:15 (ends 18:15) ← Found more! MAXIMUM!
 
-                        Extracted: [09:45, 11:30, 13:00, 15:00]
-                        Maximum: 15:00
+                        Extracted: [09:45, 11:30, 15:00, 18:15]
+                        Maximum: 18:15
                         ```
-                        ✅ CORRECT: "Mardi": "15:00"
-                        ❌ WRONG: "Mardi": "18:00" (no 18:00 course found!)
+                        ✅ CORRECT: "Mardi": "18:15" (scanned through the gap!)
+                        ❌ WRONG: "Mardi": "15:00" (stopped at gap - missed the last course!)
 
                         📌 Example B - Day ending at 18:00:
                         ```
@@ -543,19 +710,15 @@ public class AIScheduleService {
                 System.out.println("[AIScheduleService] ⚠️ WARNING: All weekdays returned as '" + sameTime + "'");
                 System.out.println(
                         "[AIScheduleService] ⚠️ This is highly unlikely - AI probably failed to parse PDF structure");
-                System.out.println("[AIScheduleService] ⚠️ Applying varied realistic defaults...");
+                System.out.println(
+                        "[AIScheduleService] ⚠️ DISABLED: NOT applying defaults - using AI extraction as-is for debugging");
 
-                // Apply more realistic varied times
-                normalizedTimes.put("Monday", "16:30");
-                normalizedTimes.put("Tuesday", "16:30");
-                normalizedTimes.put("Wednesday", "15:00");
-                normalizedTimes.put("Thursday", "11:30");
-                normalizedTimes.put("Friday", "18:00");
-
-                System.out
-                        .println("[AIScheduleService] 🔧 Applied varied defaults based on typical university patterns");
-                System.out
-                        .println("[AIScheduleService] ℹ️ Students can regenerate if these don't match their schedule");
+                // TEMPORARILY DISABLED - Let's see if the AI extraction is actually correct
+                // normalizedTimes.put("Monday", "16:30");
+                // normalizedTimes.put("Tuesday", "16:30");
+                // normalizedTimes.put("Wednesday", "15:00");
+                // normalizedTimes.put("Thursday", "11:30");
+                // normalizedTimes.put("Friday", "18:00");
             }
 
             System.out.println("[AIScheduleService] ✓ Extracted school end times:");
