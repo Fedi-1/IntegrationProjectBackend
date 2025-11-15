@@ -1,5 +1,5 @@
 # Use official Eclipse Temurin JDK 21 image
-FROM eclipse-temurin:21-jdk-focal
+FROM eclipse-temurin:21-jdk-jammy
 
 # Set working directory inside container
 WORKDIR /app
