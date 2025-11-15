@@ -17,6 +17,6 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
     List<Quiz> findByStudentAndStatusOrderByCompletedAtDesc(Student student, String status);
 
     List<Quiz> findByStudentAndSubject(Student student, String subject);
-    
+
     List<Quiz> findByStatusAndCompletedAtAfter(String status, LocalDateTime completedAt);
 }

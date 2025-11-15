@@ -15,9 +15,9 @@ public interface GeneratedScheduleRepository extends JpaRepository<GeneratedSche
     List<GeneratedSchedule> findByStudentOrderByDayAscTimeSlotAsc(Student student);
 
     List<GeneratedSchedule> findByStudentAndDayOrderByTimeSlotAsc(Student student, String day);
-    
+
     List<GeneratedSchedule> findByStudentAndDay(Student student, String day);
-    
+
     List<GeneratedSchedule> findByStudentAndDayAndCompleted(Student student, String day, Boolean completed);
 
     List<GeneratedSchedule> findBySessionId(String sessionId);
