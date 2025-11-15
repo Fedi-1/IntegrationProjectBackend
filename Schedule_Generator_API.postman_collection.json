@@ -11,7 +11,7 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:5069/api/schedule/health",
+          "raw": "https://integrationprojectbackend.onrender.com/api/schedule/health",
           "protocol": "http",
           "host": ["localhost"],
           "port": "5069",
@@ -35,7 +35,7 @@
           "raw": "{\n  \"name\": \"Ahmed Hassan\",\n  \"age\": 18,\n  \"subjects\": [\n    {\n      \"name\": \"Math\",\n      \"difficulty\": \"hard\",\n      \"hoursPerWeek\": 10\n    },\n    {\n      \"name\": \"Physics\",\n      \"difficulty\": \"medium\",\n      \"hoursPerWeek\": 8\n    }\n  ]\n}"
         },
         "url": {
-          "raw": "http://localhost:5069/api/schedule/generate/STUDENT123",
+          "raw": "https://integrationprojectbackend.onrender.com/api/schedule/generate/STUDENT123",
           "protocol": "http",
           "host": ["localhost"],
           "port": "5069",
@@ -59,7 +59,7 @@
           "raw": "{\n  \"name\": \"Sara Mohamed\",\n  \"age\": 19,\n  \"subjects\": [\n    {\n      \"name\": \"Mathematics\",\n      \"difficulty\": \"hard\",\n      \"hoursPerWeek\": 12\n    },\n    {\n      \"name\": \"Physics\",\n      \"difficulty\": \"medium\",\n      \"hoursPerWeek\": 10\n    },\n    {\n      \"name\": \"English\",\n      \"difficulty\": \"easy\",\n      \"hoursPerWeek\": 6\n    }\n  ],\n  \"examDates\": {\n    \"Mathematics\": \"2025-12-15\",\n    \"Physics\": \"2025-12-18\",\n    \"English\": \"2025-12-20\"\n  },\n  \"learningPreferences\": {\n    \"preferredTime\": \"morning\",\n    \"studyStyle\": \"visual\",\n    \"breakFrequency\": 60\n  },\n  \"weeklyAvailability\": {\n    \"Monday\": [\"08:00-12:00\", \"14:00-18:00\"],\n    \"Tuesday\": [\"08:00-12:00\", \"14:00-18:00\"],\n    \"Wednesday\": [\"08:00-12:00\", \"14:00-18:00\"],\n    \"Thursday\": [\"08:00-12:00\", \"14:00-18:00\"],\n    \"Friday\": [\"08:00-12:00\"],\n    \"Saturday\": [\"09:00-13:00\"]\n  },\n  \"constraints\": {\n    \"maxStudyHoursPerDay\": 6,\n    \"minBreakDuration\": 10,\n    \"maxConsecutiveStudyHours\": 2\n  }\n}"
         },
         "url": {
-          "raw": "http://localhost:5069/api/schedule/generate/STUDENT123",
+          "raw": "https://integrationprojectbackend.onrender.com/api/schedule/generate/STUDENT123",
           "protocol": "http",
           "host": ["localhost"],
           "port": "5069",
@@ -74,7 +74,7 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:5069/api/schedule/student/STUDENT123",
+          "raw": "https://integrationprojectbackend.onrender.com/api/schedule/student/STUDENT123",
           "protocol": "http",
           "host": ["localhost"],
           "port": "5069",
@@ -89,7 +89,7 @@
         "method": "DELETE",
         "header": [],
         "url": {
-          "raw": "http://localhost:5069/api/schedule/student/STUDENT123",
+          "raw": "https://integrationprojectbackend.onrender.com/api/schedule/student/STUDENT123",
           "protocol": "http",
           "host": ["localhost"],
           "port": "5069",

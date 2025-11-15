@@ -144,7 +144,7 @@ public class ScheduleGenerationRequestExamples {
      */
     public static void main(String[] args) {
         System.out.println("=== BASIC EXAMPLE ===");
-        System.out.println("POST http://localhost:5069/api/schedule/generate/STUDENT_CIN");
+        System.out.println("POST https://integrationprojectbackend.onrender.com/api/schedule/generate/STUDENT_CIN");
         System.out.println("Content-Type: application/json");
         System.out.println();
         System.out.println("{\n" +
@@ -165,7 +165,8 @@ public class ScheduleGenerationRequestExamples {
                 "}");
 
         System.out.println("\n\n=== CURL COMMAND ===");
-        System.out.println("curl -X POST http://localhost:5069/api/schedule/generate/STUDENT_CIN \\");
+        System.out.println(
+                "curl -X POST https://integrationprojectbackend.onrender.com/api/schedule/generate/STUDENT_CIN \\");
         System.out.println("  -H \"Content-Type: application/json\" \\");
         System.out.println(
                 "  -d '{\"name\":\"Ahmed Hassan\",\"age\":18,\"subjects\":[{\"name\":\"Math\",\"difficulty\":\"hard\",\"hoursPerWeek\":10},{\"name\":\"Physics\",\"difficulty\":\"medium\",\"hoursPerWeek\":8}]}'");
