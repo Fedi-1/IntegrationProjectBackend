@@ -2,6 +2,7 @@ package com.example.IntegrationProjectBackend.controllers;
 
 import com.example.IntegrationProjectBackend.services.EmailService;
 import com.example.IntegrationProjectBackend.services.NotificationScheduler;
+import com.example.IntegrationProjectBackend.services.SendGridEmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,9 @@ public class HealthController {
     private NotificationScheduler notificationScheduler;
 
     @Autowired
+    private SendGridEmailService sendGridEmailService;
+
+    @Autowired
     private JavaMailSender mailSender;
 
     @Value("${spring.mail.username:NOT_SET}")
@@ -36,6 +40,9 @@ public class HealthController {
 
     @Value("${spring.mail.port:NOT_SET}")
     private String mailPort;
+
+    @Value("${sendgrid.api.key:NOT_SET}")
+    private String sendGridApiKey;
 
     /**
      * Health check endpoint for monitoring services like UptimeRobot
@@ -100,6 +107,8 @@ public class HealthController {
         response.put("mailHost", mailHost);
         response.put("mailPort", mailPort);
         response.put("mailSenderConfigured", mailSender != null);
+        response.put("sendgrid_configured", sendGridEmailService.isConfigured());
+        response.put("sendgrid_api_key_set", !sendGridApiKey.equals("NOT_SET") && !sendGridApiKey.isEmpty());
 
         // Check if credentials are set
         boolean isConfigured = !emailUsername.equals("NOT_SET") &&
@@ -219,5 +228,50 @@ public class HealthController {
             response.put("error", e.getMessage());
             return ResponseEntity.status(500).body(response);
         }
+    }
+
+    /**
+     * Test SendGrid email service
+     */
+    @GetMapping("/test-sendgrid")
+    public ResponseEntity<Map<String, Object>> testSendGrid(@RequestParam(required = false) String to) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            String recipient = (to != null && !to.isEmpty()) ? to : "feditriki05@gmail.com";
+
+            if (!sendGridEmailService.isConfigured()) {
+                response.put("success", false);
+                response.put("error", "SendGrid is not configured. Please set SENDGRID_API_KEY environment variable.");
+                response.put("timestamp", LocalDateTime.now().toString());
+                return ResponseEntity.ok(response);
+            }
+
+            boolean sent = sendGridEmailService.sendEmail(
+                recipient,
+                "Test Email from SendGrid",
+                "This is a test email sent via SendGrid HTTP API at " + LocalDateTime.now() + 
+                "\n\nIf you received this, the SendGrid integration is working correctly!" +
+                "\n\nSendGrid bypasses SMTP port restrictions on Render free tier."
+            );
+
+            response.put("success", sent);
+            response.put("recipient", recipient);
+            response.put("service", "SendGrid HTTP API");
+            response.put("timestamp", LocalDateTime.now().toString());
+            
+            if (sent) {
+                response.put("message", "Email sent successfully via SendGrid!");
+            } else {
+                response.put("message", "Failed to send email via SendGrid. Check logs for details.");
+            }
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("error", e.getMessage());
+            response.put("timestamp", LocalDateTime.now().toString());
+        }
+
+        return ResponseEntity.ok(response);
     }
 }
