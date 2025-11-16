@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -272,5 +274,29 @@ public class HealthController {
         }
 
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Debug endpoint to check homework notification data
+     */
+    @GetMapping("/debug-homework")
+    public ResponseEntity<Map<String, Object>> debugHomework() {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            String today = LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE"));
+            response.put("today", today);
+            response.put("date", LocalDate.now().toString());
+            response.put("timestamp", LocalDateTime.now().toString());
+            
+            // This will show if the notification would run
+            // We'll add the actual logic in the next step
+            response.put("message", "Debug endpoint ready. Check today's date: " + today);
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("error", e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
     }
 }
