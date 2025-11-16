@@ -51,7 +51,8 @@ public class SendGridEmailService {
             Response response = sg.api(request);
 
             if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
-                System.out.println("✅ SendGrid email sent to: " + toEmail + " (Status: " + response.getStatusCode() + ")");
+                System.out.println(
+                        "✅ SendGrid email sent to: " + toEmail + " (Status: " + response.getStatusCode() + ")");
                 return true;
             } else {
                 System.err.println("❌ SendGrid error: " + response.getStatusCode() + " - " + response.getBody());

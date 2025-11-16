@@ -24,9 +24,6 @@ public class NotificationScheduler {
     private QuizRepository quizRepository;
 
     @Autowired
-    private EmailService emailService;
-
-    @Autowired
     private SendGridEmailService sendGridEmailService;
 
     /**
@@ -47,38 +44,38 @@ public class NotificationScheduler {
                         .findByStudentAndDayAndCompleted(student, today, false);
 
                 for (GeneratedSchedule task : todaysTasks) {
-                    if (task.getActivity() != null && 
-                        (task.getActivity().toLowerCase().contains("revision") || 
-                         task.getActivity().toLowerCase().contains("study"))) {
-                        
+                    if (task.getActivity() != null &&
+                            (task.getActivity().toLowerCase().contains("revision") ||
+                                    task.getActivity().toLowerCase().contains("study"))) {
+
                         String timeSlot = task.getTimeSlot();
                         if (timeSlot != null && timeSlot.contains("-")) {
                             String[] times = timeSlot.split("-");
                             String endTime = times[1].trim();
-                            
+
                             try {
                                 String[] hourMin = endTime.split(":");
                                 int endHour = Integer.parseInt(hourMin[0]);
                                 int endMinute = Integer.parseInt(hourMin[1]);
-                                
+
                                 LocalDateTime sessionEnd = now.toLocalDate().atTime(endHour, endMinute);
                                 long minutesUntilEnd = java.time.Duration.between(now, sessionEnd).toMinutes();
-                                
+
                                 if (minutesUntilEnd > 5 && minutesUntilEnd <= 15) {
                                     String studentName = student.getFirstName() + " " + student.getLastName();
-                                    String subject = task.getSubject() != null ? task.getSubject().getName() : "your subject";
+                                    String subject = task.getSubject() != null ? task.getSubject().getName()
+                                            : "your subject";
                                     String topic = task.getTopic() != null ? task.getTopic() : "";
-                                    
+
                                     sendGridEmailService.sendRevisionEndingReminder(
-                                        student.getEmail(),
-                                        studentName,
-                                        subject,
-                                        topic,
-                                        (int) minutesUntilEnd
-                                    );
-                                    
-                                    System.out.println("✅ Sent revision ending reminder to " + studentName + 
-                                                     " (" + subject + " - ends in " + minutesUntilEnd + " min)");
+                                            student.getEmail(),
+                                            studentName,
+                                            subject,
+                                            topic,
+                                            (int) minutesUntilEnd);
+
+                                    System.out.println("✅ Sent revision ending reminder to " + studentName +
+                                            " (" + subject + " - ends in " + minutesUntilEnd + " min)");
                                 }
                             } catch (Exception e) {
                                 continue;
@@ -132,7 +129,7 @@ public class NotificationScheduler {
                 }
 
                 String studentName = student.getFirstName() + " " + student.getLastName();
-                
+
                 // Try to send to parent first, otherwise send to student
                 Parent parent = student.getParent();
                 if (parent != null && parent.getEmail() != null && !parent.getEmail().isEmpty()) {
@@ -181,14 +178,14 @@ public class NotificationScheduler {
             for (Quiz quiz : recentQuizzes) {
                 Student student = quiz.getStudent();
                 Double score = quiz.getScore();
-                
+
                 if (score == null) {
                     continue;
                 }
 
                 String studentName = student.getFirstName() + " " + student.getLastName();
                 String quizTitle = quiz.getSubject() + " - " + quiz.getTopic();
-                
+
                 // Try to send to parent first, otherwise send to student
                 Parent parent = student.getParent();
                 if (parent != null && parent.getEmail() != null && !parent.getEmail().isEmpty()) {
@@ -200,8 +197,7 @@ public class NotificationScheduler {
                             studentName,
                             quizTitle,
                             score,
-                            100.0
-                    );
+                            100.0);
                     String emoji = score >= 70 ? "✅" : "⚠️";
                     System.out.println(emoji + " Sent quiz notification to parent of " + studentName +
                             " (score: " + score + "%)");
@@ -213,8 +209,7 @@ public class NotificationScheduler {
                             studentName,
                             quizTitle,
                             score,
-                            100.0
-                    );
+                            100.0);
                     String emoji = score >= 70 ? "✅" : "⚠️";
                     System.out.println(emoji + " Sent quiz notification directly to student " + studentName +
                             " (score: " + score + "%)");

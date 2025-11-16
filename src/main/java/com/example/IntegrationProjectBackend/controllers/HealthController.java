@@ -236,7 +236,7 @@ public class HealthController {
     @GetMapping("/test-sendgrid")
     public ResponseEntity<Map<String, Object>> testSendGrid(@RequestParam(required = false) String to) {
         Map<String, Object> response = new HashMap<>();
-        
+
         try {
             String recipient = (to != null && !to.isEmpty()) ? to : "feditriki05@gmail.com";
 
@@ -248,18 +248,17 @@ public class HealthController {
             }
 
             boolean sent = sendGridEmailService.sendEmail(
-                recipient,
-                "Test Email from SendGrid",
-                "This is a test email sent via SendGrid HTTP API at " + LocalDateTime.now() + 
-                "\n\nIf you received this, the SendGrid integration is working correctly!" +
-                "\n\nSendGrid bypasses SMTP port restrictions on Render free tier."
-            );
+                    recipient,
+                    "Test Email from SendGrid",
+                    "This is a test email sent via SendGrid HTTP API at " + LocalDateTime.now() +
+                            "\n\nIf you received this, the SendGrid integration is working correctly!" +
+                            "\n\nSendGrid bypasses SMTP port restrictions on Render free tier.");
 
             response.put("success", sent);
             response.put("recipient", recipient);
             response.put("service", "SendGrid HTTP API");
             response.put("timestamp", LocalDateTime.now().toString());
-            
+
             if (sent) {
                 response.put("message", "Email sent successfully via SendGrid!");
             } else {
