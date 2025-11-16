@@ -19,7 +19,7 @@ public class SendGridEmailService {
     @Value("${sendgrid.api.key:NOT_SET}")
     private String sendGridApiKey;
 
-    @Value("${spring.mail.username:noreply@studymanager.com}")
+    @Value("${spring.mail.username:louhichioussama59@gmail.com}")
     private String fromEmail;
 
     public boolean isConfigured() {
