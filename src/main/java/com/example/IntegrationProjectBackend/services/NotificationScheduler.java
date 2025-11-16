@@ -27,65 +27,78 @@ public class NotificationScheduler {
     private EmailService emailService;
 
     /**
-     * Runs every day at 10:00 PM to check for incomplete homework/tasks
-     * Cron format: second, minute, hour, day of month, month, day of week
-     * "0 0 22 * * *" = At 10:00 PM every day
+     * Runs every 15 minutes to check if students have revision sessions ending soon
+     * Sends reminder to student 10 minutes before session ends
      */
-    @Scheduled(cron = "0 0 22 * * *")
-    public void checkIncompleteHomework() {
-        System.out.println("🔔 [" + LocalDateTime.now() + "] Running homework reminder check...");
+    @Scheduled(cron = "0 */15 * * * *")
+    public void checkUpcomingRevisionSessions() {
+        System.out.println("🔔 [" + LocalDateTime.now() + "] Checking for revision sessions ending soon...");
 
         try {
             List<Student> allStudents = studentRepository.findAll();
-            String today = LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE")); // e.g., "Monday"
+            String today = LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE"));
+            LocalDateTime now = LocalDateTime.now();
 
             for (Student student : allStudents) {
-                // Find today's incomplete tasks for this student
-                List<GeneratedSchedule> incompleteTasks = generatedScheduleRepository
+                List<GeneratedSchedule> todaysTasks = generatedScheduleRepository
                         .findByStudentAndDayAndCompleted(student, today, false);
 
-                if (!incompleteTasks.isEmpty()) {
-                    // Build task description
-                    StringBuilder taskDescription = new StringBuilder();
-                    for (GeneratedSchedule task : incompleteTasks) {
-                        taskDescription.append("- ")
-                                .append(task.getTimeSlot())
-                                .append(": ")
-                                .append(task.getActivity());
-                        if (task.getSubject() != null) {
-                            taskDescription.append(" (").append(task.getSubject().getName()).append(")");
+                for (GeneratedSchedule task : todaysTasks) {
+                    if (task.getActivity() != null && 
+                        (task.getActivity().toLowerCase().contains("revision") || 
+                         task.getActivity().toLowerCase().contains("study"))) {
+                        
+                        String timeSlot = task.getTimeSlot();
+                        if (timeSlot != null && timeSlot.contains("-")) {
+                            String[] times = timeSlot.split("-");
+                            String endTime = times[1].trim();
+                            
+                            try {
+                                String[] hourMin = endTime.split(":");
+                                int endHour = Integer.parseInt(hourMin[0]);
+                                int endMinute = Integer.parseInt(hourMin[1]);
+                                
+                                LocalDateTime sessionEnd = now.toLocalDate().atTime(endHour, endMinute);
+                                long minutesUntilEnd = java.time.Duration.between(now, sessionEnd).toMinutes();
+                                
+                                if (minutesUntilEnd > 5 && minutesUntilEnd <= 15) {
+                                    String studentName = student.getFirstName() + " " + student.getLastName();
+                                    String subject = task.getSubject() != null ? task.getSubject().getName() : "your subject";
+                                    String topic = task.getTopic() != null ? task.getTopic() : "";
+                                    
+                                    emailService.sendRevisionEndingReminder(
+                                        student.getEmail(),
+                                        studentName,
+                                        subject,
+                                        topic,
+                                        (int) minutesUntilEnd
+                                    );
+                                    
+                                    System.out.println("✅ Sent revision ending reminder to " + studentName + 
+                                                     " (" + subject + " - ends in " + minutesUntilEnd + " min)");
+                                }
+                            } catch (Exception e) {
+                                continue;
+                            }
                         }
-                        if (task.getTopic() != null) {
-                            taskDescription.append(" - ").append(task.getTopic());
-                        }
-                        taskDescription.append("\n");
                     }
-
-                    // Send reminder email
-                    String studentName = student.getFirstName() + " " + student.getLastName();
-                    emailService.sendStudentReminder(
-                            student.getEmail(),
-                            studentName,
-                            taskDescription.toString());
-
-                    System.out.println("✅ Sent reminder to " + studentName + " (" + incompleteTasks.size() + " tasks)");
                 }
             }
 
-            System.out.println("✅ Homework reminder check completed");
+            System.out.println("✅ Revision session check completed");
         } catch (Exception e) {
-            System.err.println("❌ Error in homework reminder check: " + e.getMessage());
+            System.err.println("❌ Error in revision session check: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
     /**
-     * Runs every day at 11:00 PM to check revision adherence for parents
-     * "0 0 23 * * *" = At 11:00 PM every day
+     * Runs every day at 11:00 PM to check if students marked homework as finished
+     * Notifies parents when their child didn't mark homework/tasks as completed
      */
     @Scheduled(cron = "0 0 23 * * *")
-    public void checkRevisionAdherence() {
-        System.out.println("🔔 [" + LocalDateTime.now() + "] Running revision adherence check for parents...");
+    public void checkUnfinishedHomework() {
+        System.out.println("🔔 [" + LocalDateTime.now() + "] Checking for unfinished homework...");
 
         try {
             List<Student> allStudents = studentRepository.findAll();
@@ -94,59 +107,59 @@ public class NotificationScheduler {
             for (Student student : allStudents) {
                 Parent parent = student.getParent();
                 if (parent == null || parent.getEmail() == null) {
-                    continue; // Skip if no parent or parent has no email
+                    continue;
                 }
 
-                // Get today's schedule for the student
-                List<GeneratedSchedule> todaysSchedule = generatedScheduleRepository
-                        .findByStudentAndDay(student, today);
+                List<GeneratedSchedule> unfinishedTasks = generatedScheduleRepository
+                        .findByStudentAndDayAndCompleted(student, today, false);
 
-                if (todaysSchedule.isEmpty()) {
-                    continue; // No schedule for today
-                }
+                if (!unfinishedTasks.isEmpty()) {
+                    StringBuilder taskList = new StringBuilder();
+                    for (GeneratedSchedule task : unfinishedTasks) {
+                        taskList.append("- ")
+                                .append(task.getTimeSlot())
+                                .append(": ")
+                                .append(task.getActivity());
+                        if (task.getSubject() != null) {
+                            taskList.append(" (").append(task.getSubject().getName()).append(")");
+                        }
+                        if (task.getTopic() != null) {
+                            taskList.append(" - ").append(task.getTopic());
+                        }
+                        taskList.append("\n");
+                    }
 
-                // Calculate completion percentage
-                long totalTasks = todaysSchedule.size();
-                long completedTasks = todaysSchedule.stream()
-                        .filter(task -> task.getCompleted() != null && task.getCompleted())
-                        .count();
-
-                int completionPercentage = (int) ((completedTasks * 100) / totalTasks);
-
-                // Alert parent if completion is below 50%
-                if (completionPercentage < 50) {
                     String parentName = parent.getFirstName() + " " + parent.getLastName();
                     String studentName = student.getFirstName() + " " + student.getLastName();
 
-                    emailService.sendParentRevisionAlert(
+                    emailService.sendParentHomeworkAlert(
                             parent.getEmail(),
                             parentName,
                             studentName,
-                            completionPercentage);
+                            unfinishedTasks.size(),
+                            taskList.toString());
 
-                    System.out.println("⚠️ Sent revision alert to parent of " + studentName +
-                            " (completion: " + completionPercentage + "%)");
+                    System.out.println("⚠️ Sent unfinished homework alert to parent of " + studentName +
+                            " (" + unfinishedTasks.size() + " tasks not completed)");
                 }
             }
 
-            System.out.println("✅ Revision adherence check completed");
+            System.out.println("✅ Unfinished homework check completed");
         } catch (Exception e) {
-            System.err.println("❌ Error in revision adherence check: " + e.getMessage());
+            System.err.println("❌ Error in unfinished homework check: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
     /**
-     * Check for poor quiz scores and notify parents
+     * Check for quiz scores and notify parents
      * Runs every hour to catch newly completed quizzes
-     * "0 0 * * * *" = Every hour on the hour
      */
     @Scheduled(cron = "0 0 * * * *")
     public void checkQuizScores() {
         System.out.println("🔔 [" + LocalDateTime.now() + "] Running quiz score check...");
 
         try {
-            // Find recently completed quizzes (within last hour)
             LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
             List<Quiz> recentQuizzes = quizRepository.findByStatusAndCompletedAtAfter("completed", oneHourAgo);
 
@@ -155,16 +168,14 @@ public class NotificationScheduler {
                 Parent parent = student.getParent();
 
                 if (parent == null || parent.getEmail() == null) {
-                    continue; // Skip if no parent or parent has no email
+                    continue;
                 }
 
                 Double score = quiz.getScore();
                 if (score == null) {
-                    continue; // Skip if score not calculated
+                    continue;
                 }
 
-                // Notify parent for all quiz results (can filter by score threshold if needed)
-                // Currently notifies for all quizzes, marks poor scores differently
                 String parentName = parent.getFirstName() + " " + parent.getLastName();
                 String studentName = student.getFirstName() + " " + student.getLastName();
                 String quizTitle = quiz.getSubject() + " - " + quiz.getTopic();
@@ -175,7 +186,7 @@ public class NotificationScheduler {
                         studentName,
                         quizTitle,
                         score,
-                        100.0 // Assuming score is percentage
+                        100.0
                 );
 
                 String emoji = score >= 70 ? "✅" : "⚠️";
@@ -189,13 +200,4 @@ public class NotificationScheduler {
             e.printStackTrace();
         }
     }
-
-    /**
-     * Test method - runs every minute for debugging (disable in production)
-     * Uncomment only for testing
-     */
-    // @Scheduled(cron = "0 * * * * *")
-    // public void testScheduler() {
-    // System.out.println("✅ Scheduler is working at: " + LocalDateTime.now());
-    // }
 }

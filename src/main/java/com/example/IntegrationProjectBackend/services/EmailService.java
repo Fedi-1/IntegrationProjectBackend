@@ -16,52 +16,62 @@ public class EmailService {
     private String fromEmail;
 
     /**
-     * Send a homework reminder to student
+     * Send reminder to student when revision session is about to end
      */
-    public void sendStudentReminder(String toEmail, String studentName, String taskDescription) {
+    public void sendRevisionEndingReminder(String toEmail, String studentName, String subject, String topic,
+            int minutesLeft) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(fromEmail);
             message.setTo(toEmail);
-            message.setSubject("⏰ Homework Reminder - Don't Forget!");
+            message.setSubject("⏰ Revision Session Ending Soon - " + subject);
+
+            String topicText = (topic != null && !topic.isEmpty()) ? " on " + topic : "";
+
             message.setText(String.format(
                     "Hello %s,\n\n" +
-                            "This is a friendly reminder that you have pending homework:\n\n" +
-                            "📚 Task: %s\n\n" +
-                            "Please complete it before the deadline.\n\n" +
-                            "Good luck with your studies!\n\n" +
+                            "⏰ Your revision session for %s%s is ending in %d minutes!\n\n" +
+                            "Make sure to:\n" +
+                            "✅ Complete your current topic\n" +
+                            "✅ Review key points\n" +
+                            "✅ Mark your session as finished when done\n\n" +
+                            "Keep up the great work! 📚\n\n" +
                             "Best regards,\n" +
                             "Your Study Management System",
-                    studentName, taskDescription));
+                    studentName, subject, topicText, minutesLeft));
 
             mailSender.send(message);
-            System.out.println("✅ Reminder email sent to: " + toEmail);
+            System.out.println("✅ Revision ending reminder sent to: " + toEmail);
         } catch (Exception e) {
-            System.err.println("❌ Failed to send email to " + toEmail + ": " + e.getMessage());
+            System.err.println("❌ Failed to send reminder to " + toEmail + ": " + e.getMessage());
         }
     }
 
     /**
-     * Send revision adherence alert to parent
+     * Send alert to parent when student didn't mark homework as finished
      */
-    public void sendParentRevisionAlert(String toEmail, String parentName, String studentName,
-            int completionPercentage) {
+    public void sendParentHomeworkAlert(String toEmail, String parentName, String studentName,
+            int unfinishedCount, String taskList) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(fromEmail);
             message.setTo(toEmail);
-            message.setSubject("⚠️ Revision Schedule Alert - " + studentName);
+            message.setSubject("⚠️ Homework Not Completed - " + studentName);
             message.setText(String.format(
                     "Dear %s,\n\n" +
-                            "We noticed that %s is not following the revision schedule properly.\n\n" +
-                            "📊 Current Completion Rate: %d%%\n\n" +
-                            "Please encourage your child to stay on track with their study plan.\n\n" +
+                            "⚠️ %s has %d task(s) that were not marked as finished today:\n\n" +
+                            "%s\n" +
+                            "Please remind your child to:\n" +
+                            "• Complete all assigned tasks\n" +
+                            "• Mark tasks as finished when done\n" +
+                            "• Follow the revision schedule\n\n" +
+                            "Regular completion tracking helps maintain good study habits.\n\n" +
                             "Best regards,\n" +
                             "Your Study Management System",
-                    parentName, studentName, completionPercentage));
+                    parentName, studentName, unfinishedCount, taskList));
 
             mailSender.send(message);
-            System.out.println("✅ Revision alert sent to parent: " + toEmail);
+            System.out.println("✅ Homework alert sent to parent: " + toEmail);
         } catch (Exception e) {
             System.err.println("❌ Failed to send parent alert to " + toEmail + ": " + e.getMessage());
         }
