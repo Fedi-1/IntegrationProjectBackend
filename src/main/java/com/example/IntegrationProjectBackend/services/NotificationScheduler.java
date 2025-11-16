@@ -8,8 +8,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 public class NotificationScheduler {
@@ -36,7 +37,7 @@ public class NotificationScheduler {
 
         try {
             List<Student> allStudents = studentRepository.findAll();
-            String today = LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE"));
+            String today = LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.ENGLISH);
             LocalDateTime now = LocalDateTime.now();
 
             for (Student student : allStudents) {
@@ -102,7 +103,7 @@ public class NotificationScheduler {
 
         try {
             List<Student> allStudents = studentRepository.findAll();
-            String today = LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE"));
+            String today = LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.ENGLISH);
 
             for (Student student : allStudents) {
                 List<GeneratedSchedule> unfinishedTasks = generatedScheduleRepository

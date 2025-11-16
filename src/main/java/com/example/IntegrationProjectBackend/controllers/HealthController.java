@@ -283,20 +283,23 @@ public class HealthController {
 
     /**
      * Debug endpoint to check homework notification data
+     * Shows what the system is looking for vs what's in database
      */
     @GetMapping("/debug-homework")
-    public ResponseEntity<Map<String, Object>> debugHomework() {
+    public ResponseEntity<Map<String, Object>> debugHomework(@RequestParam(required = false) String cin) {
         Map<String, Object> response = new HashMap<>();
         
         try {
             String today = LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE"));
-            response.put("today", today);
+            response.put("today_computed", today);
             response.put("date", LocalDate.now().toString());
             response.put("timestamp", LocalDateTime.now().toString());
             
-            // This will show if the notification would run
-            // We'll add the actual logic in the next step
-            response.put("message", "Debug endpoint ready. Check today's date: " + today);
+            if (cin != null && !cin.isEmpty()) {
+                response.put("note", "Check the 'day' values in your database tasks. They must match exactly: '" + today + "'");
+            } else {
+                response.put("note", "Add ?cin=YOUR_CIN to see your actual tasks and their day values");
+            }
             
             return ResponseEntity.ok(response);
         } catch (Exception e) {
