@@ -81,9 +81,15 @@ public class DailyScheduleController {
         List<GeneratedSchedule> todaySchedules = generatedScheduleRepository
                 .findByStudentAndDayOrderByTimeSlotAsc(student, currentDay);
 
+        // Filter out breaks - only include actual study sessions
+        List<GeneratedSchedule> studySessions = todaySchedules.stream()
+                .filter(s -> !s.getActivity().equalsIgnoreCase("Break") &&
+                        !s.getActivity().equalsIgnoreCase("PAUSE"))
+                .collect(java.util.stream.Collectors.toList());
+
         // Build response
         List<Map<String, Object>> scheduleItems = new ArrayList<>();
-        for (GeneratedSchedule schedule : todaySchedules) {
+        for (GeneratedSchedule schedule : studySessions) {
             Map<String, Object> item = new HashMap<>();
             item.put("id", schedule.getId());
             item.put("timeSlot", schedule.getTimeSlot());
@@ -107,12 +113,12 @@ public class DailyScheduleController {
             scheduleItems.add(item);
         }
 
-        // Calculate completion stats
-        long totalSessions = todaySchedules.size();
-        long completedSessions = todaySchedules.stream()
+        // Calculate completion stats (only for study sessions, not breaks)
+        long totalSessions = studySessions.size();
+        long completedSessions = studySessions.stream()
                 .filter(s -> s.getCompleted() != null && s.getCompleted())
                 .count();
-        long lateSessions = todaySchedules.stream()
+        long lateSessions = studySessions.stream()
                 .filter(this::isCompletedLate)
                 .count();
 

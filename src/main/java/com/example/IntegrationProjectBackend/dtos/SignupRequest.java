@@ -45,4 +45,5 @@ public class SignupRequest {
     // For students only
     private String parentCin;
     private Integer maxStudyDuration;
+    private Integer preparationTimeMinutes;
 }

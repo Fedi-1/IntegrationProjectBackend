@@ -78,6 +78,10 @@ public class AuthService {
                         request.getMaxStudyDuration() != null ? request.getMaxStudyDuration() : 240); // Default 240
                                                                                                       // minutes (4
                                                                                                       // hours)
+                student.setPreparationTimeMinutes(
+                        request.getPreparationTimeMinutes() != null ? request.getPreparationTimeMinutes() : 30); // Default
+                                                                                                                 // 30
+                                                                                                                 // minutes
 
                 // Link to parent if parentCin is provided
                 if (request.getParentCin() != null && !request.getParentCin().isEmpty()) {
