@@ -95,30 +95,30 @@ public class HealthController {
     @GetMapping("/email-config")
     public ResponseEntity<Map<String, Object>> checkEmailConfig() {
         Map<String, Object> response = new HashMap<>();
-        
+
         response.put("emailUsername", emailUsername);
         response.put("mailHost", mailHost);
         response.put("mailPort", mailPort);
         response.put("mailSenderConfigured", mailSender != null);
-        
+
         // Check if credentials are set
-        boolean isConfigured = !emailUsername.equals("NOT_SET") && 
-                              !mailHost.equals("NOT_SET");
-        
+        boolean isConfigured = !emailUsername.equals("NOT_SET") &&
+                !mailHost.equals("NOT_SET");
+
         response.put("isFullyConfigured", isConfigured);
-        
+
         if (!isConfigured) {
-            response.put("warning", "Email not fully configured. Check environment variables: EMAIL_USERNAME, EMAIL_APP_PASSWORD");
+            response.put("warning",
+                    "Email not fully configured. Check environment variables: EMAIL_USERNAME, EMAIL_APP_PASSWORD");
         }
-        
+
         response.put("instructions", Map.of(
-            "step1", "Ensure EMAIL_USERNAME is set to your Gmail address",
-            "step2", "Ensure EMAIL_APP_PASSWORD is set to your Gmail App Password (not regular password)",
-            "step3", "Gmail must have 2-Factor Authentication enabled",
-            "step4", "Check spam folder in Gmail",
-            "step5", "May take 1-2 minutes for email to arrive"
-        ));
-        
+                "step1", "Ensure EMAIL_USERNAME is set to your Gmail address",
+                "step2", "Ensure EMAIL_APP_PASSWORD is set to your Gmail App Password (not regular password)",
+                "step3", "Gmail must have 2-Factor Authentication enabled",
+                "step4", "Check spam folder in Gmail",
+                "step5", "May take 1-2 minutes for email to arrive"));
+
         return ResponseEntity.ok(response);
     }
 
@@ -128,37 +128,36 @@ public class HealthController {
     @GetMapping("/test-email-detailed")
     public ResponseEntity<Map<String, Object>> testEmailDetailed(@RequestParam(required = false) String to) {
         Map<String, Object> response = new HashMap<>();
-        
+
         try {
             String recipient = (to != null && !to.isEmpty()) ? to : "feditriki05@gmail.com";
-            
+
             // Check configuration first
             if (emailUsername.equals("NOT_SET")) {
                 response.put("success", false);
                 response.put("error", "EMAIL_USERNAME not configured in environment variables");
                 return ResponseEntity.status(500).body(response);
             }
-            
+
             // Send test email
             String testTime = LocalDateTime.now().toString();
             emailService.sendEmail(
-                recipient,
-                "🔔 Test Email - " + testTime,
-                "✅ SUCCESS! Email system is working!\n\n" +
-                "📧 From: " + emailUsername + "\n" +
-                "📧 To: " + recipient + "\n" +
-                "⏰ Sent at: " + testTime + "\n\n" +
-                "If you can read this, your notification system should work.\n\n" +
-                "⚠️ CHECK YOUR SPAM FOLDER if you don't see this in inbox!\n\n" +
-                "Next steps:\n" +
-                "1. Check your spam/junk folder\n" +
-                "2. Mark as 'Not Spam' if found there\n" +
-                "3. Add sender to contacts\n" +
-                "4. Wait 1-2 minutes for delivery\n\n" +
-                "Best regards,\n" +
-                "IntegrationProject Notification System"
-            );
-            
+                    recipient,
+                    "🔔 Test Email - " + testTime,
+                    "✅ SUCCESS! Email system is working!\n\n" +
+                            "📧 From: " + emailUsername + "\n" +
+                            "📧 To: " + recipient + "\n" +
+                            "⏰ Sent at: " + testTime + "\n\n" +
+                            "If you can read this, your notification system should work.\n\n" +
+                            "⚠️ CHECK YOUR SPAM FOLDER if you don't see this in inbox!\n\n" +
+                            "Next steps:\n" +
+                            "1. Check your spam/junk folder\n" +
+                            "2. Mark as 'Not Spam' if found there\n" +
+                            "3. Add sender to contacts\n" +
+                            "4. Wait 1-2 minutes for delivery\n\n" +
+                            "Best regards,\n" +
+                            "IntegrationProject Notification System");
+
             response.put("success", true);
             response.put("message", "Test email sent successfully");
             response.put("recipient", recipient);
@@ -166,14 +165,15 @@ public class HealthController {
             response.put("timestamp", testTime);
             response.put("important", "CHECK YOUR SPAM FOLDER! Emails from new senders often go there first.");
             response.put("waitTime", "Allow 1-2 minutes for email delivery");
-            
+
             return ResponseEntity.ok(response);
-            
+
         } catch (Exception e) {
             response.put("success", false);
             response.put("error", e.getMessage());
             response.put("errorType", e.getClass().getSimpleName());
-            response.put("suggestion", "Check Render logs for detailed error. Verify EMAIL_USERNAME and EMAIL_APP_PASSWORD are set correctly.");
+            response.put("suggestion",
+                    "Check Render logs for detailed error. Verify EMAIL_USERNAME and EMAIL_APP_PASSWORD are set correctly.");
             return ResponseEntity.status(500).body(response);
         }
     }
