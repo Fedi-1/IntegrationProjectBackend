@@ -197,6 +197,8 @@ public class HealthController {
         Map<String, Object> response = new HashMap<>();
 
         try {
+            String today = LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE"));
+            
             switch (type.toLowerCase()) {
                 case "revision":
                     notificationScheduler.checkUpcomingRevisionSessions();
@@ -205,6 +207,7 @@ public class HealthController {
                 case "homework":
                     notificationScheduler.checkUnfinishedHomework();
                     response.put("message", "Unfinished homework check triggered");
+                    response.put("note", "Check Render logs for details. Emails only sent if unfinished tasks exist for today (" + today + ")");
                     break;
                 case "quiz":
                     notificationScheduler.checkQuizScores();
@@ -223,6 +226,8 @@ public class HealthController {
 
             response.put("success", true);
             response.put("timestamp", LocalDateTime.now().toString());
+            response.put("today", today);
+            response.put("instructions", "Check Render logs at: https://dashboard.render.com → IntegrationProjectBackend → Logs");
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
