@@ -9,7 +9,9 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 public class NotificationScheduler {
@@ -36,8 +38,9 @@ public class NotificationScheduler {
 
         try {
             List<Student> allStudents = studentRepository.findAll();
-            String today = LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE"));
+            String today = LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.ENGLISH);
             LocalDateTime now = LocalDateTime.now();
+            System.out.println("🔍 Looking for revision sessions on: " + today);
 
             for (Student student : allStudents) {
                 List<GeneratedSchedule> todaysTasks = generatedScheduleRepository
@@ -102,11 +105,13 @@ public class NotificationScheduler {
 
         try {
             List<Student> allStudents = studentRepository.findAll();
-            String today = LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE"));
+            String today = LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.ENGLISH);
+            System.out.println("🔍 Looking for unfinished homework on: " + today);
 
             for (Student student : allStudents) {
+                // Use custom query that handles NULL as uncompleted
                 List<GeneratedSchedule> unfinishedTasks = generatedScheduleRepository
-                        .findByStudentAndDayAndCompleted(student, today, false);
+                        .findUncompletedByStudentAndDay(student, today);
 
                 if (unfinishedTasks.isEmpty()) {
                     continue;
