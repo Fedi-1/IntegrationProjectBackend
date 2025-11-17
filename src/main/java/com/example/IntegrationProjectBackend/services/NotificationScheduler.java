@@ -8,9 +8,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.TextStyle;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Locale;
 
 @Service
 public class NotificationScheduler {
@@ -37,7 +36,7 @@ public class NotificationScheduler {
 
         try {
             List<Student> allStudents = studentRepository.findAll();
-            String today = LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.ENGLISH);
+            String today = LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE"));
             LocalDateTime now = LocalDateTime.now();
 
             for (Student student : allStudents) {
@@ -103,28 +102,11 @@ public class NotificationScheduler {
 
         try {
             List<Student> allStudents = studentRepository.findAll();
-            String today = LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.ENGLISH);
-            System.out.println("🔍 DEBUG: Looking for tasks with day = '" + today + "'");
+            String today = LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE"));
 
             for (Student student : allStudents) {
-                String studentName = student.getFirstName() + " " + student.getLastName();
-                System.out.println("🔍 DEBUG: Checking student: " + studentName + " (CIN: " + student.getCin() + ")");
-                
-                // First get ALL tasks for this student to see what days exist
-                List<GeneratedSchedule> allTasks = generatedScheduleRepository.findByStudent(student);
-                System.out.println("🔍 DEBUG: Student has " + allTasks.size() + " total tasks");
-                if (!allTasks.isEmpty()) {
-                    System.out.println("🔍 DEBUG: Sample task days: " + allTasks.stream()
-                        .limit(5)
-                        .map(t -> "'" + t.getDay() + "'")
-                        .distinct()
-                        .reduce((a, b) -> a + ", " + b)
-                        .orElse("none"));
-                }
-                
                 List<GeneratedSchedule> unfinishedTasks = generatedScheduleRepository
                         .findByStudentAndDayAndCompleted(student, today, false);
-                System.out.println("🔍 DEBUG: Found " + unfinishedTasks.size() + " unfinished tasks for '" + today + "'");
 
                 if (unfinishedTasks.isEmpty()) {
                     continue;
@@ -145,6 +127,8 @@ public class NotificationScheduler {
                     }
                     taskList.append("\n");
                 }
+
+                String studentName = student.getFirstName() + " " + student.getLastName();
 
                 // Try to send to parent first, otherwise send to student
                 Parent parent = student.getParent();

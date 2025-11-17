@@ -12,9 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -197,8 +195,6 @@ public class HealthController {
         Map<String, Object> response = new HashMap<>();
 
         try {
-            String today = LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE"));
-            
             switch (type.toLowerCase()) {
                 case "revision":
                     notificationScheduler.checkUpcomingRevisionSessions();
@@ -207,7 +203,6 @@ public class HealthController {
                 case "homework":
                     notificationScheduler.checkUnfinishedHomework();
                     response.put("message", "Unfinished homework check triggered");
-                    response.put("note", "Check Render logs for details. Emails only sent if unfinished tasks exist for today (" + today + ")");
                     break;
                 case "quiz":
                     notificationScheduler.checkQuizScores();
@@ -226,8 +221,6 @@ public class HealthController {
 
             response.put("success", true);
             response.put("timestamp", LocalDateTime.now().toString());
-            response.put("today", today);
-            response.put("instructions", "Check Render logs at: https://dashboard.render.com → IntegrationProjectBackend → Logs");
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
@@ -279,32 +272,5 @@ public class HealthController {
         }
 
         return ResponseEntity.ok(response);
-    }
-
-    /**
-     * Debug endpoint to check homework notification data
-     * Shows what the system is looking for vs what's in database
-     */
-    @GetMapping("/debug-homework")
-    public ResponseEntity<Map<String, Object>> debugHomework(@RequestParam(required = false) String cin) {
-        Map<String, Object> response = new HashMap<>();
-        
-        try {
-            String today = LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE"));
-            response.put("today_computed", today);
-            response.put("date", LocalDate.now().toString());
-            response.put("timestamp", LocalDateTime.now().toString());
-            
-            if (cin != null && !cin.isEmpty()) {
-                response.put("note", "Check the 'day' values in your database tasks. They must match exactly: '" + today + "'");
-            } else {
-                response.put("note", "Add ?cin=YOUR_CIN to see your actual tasks and their day values");
-            }
-            
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            response.put("error", e.getMessage());
-            return ResponseEntity.status(500).body(response);
-        }
     }
 }
