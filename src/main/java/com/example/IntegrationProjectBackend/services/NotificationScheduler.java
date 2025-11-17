@@ -96,10 +96,10 @@ public class NotificationScheduler {
     }
 
     /**
-     * Runs every day at 11:00 PM to check if students marked homework as finished
+     * Runs every day at 11:00 PM Tunisia time (22:00 UTC) to check if students marked homework as finished
      * Sends to parent if available, otherwise sends to student directly
      */
-    @Scheduled(cron = "0 0 23 * * *")
+    @Scheduled(cron = "0 0 22 * * *")  // 22:00 UTC = 23:00 Tunisia time (UTC+1)
     public void checkUnfinishedHomework() {
         System.out.println("🔔 [" + LocalDateTime.now() + "] Checking for unfinished homework...");
 
@@ -137,7 +137,7 @@ public class NotificationScheduler {
 
                 // Send to both parent AND student
                 Parent parent = student.getParent();
-                
+
                 // Always send to student
                 sendGridEmailService.sendHomeworkAlert(
                         student.getEmail(),
@@ -147,7 +147,7 @@ public class NotificationScheduler {
                         taskList.toString());
                 System.out.println("⚠️ Sent homework alert to student " + studentName +
                         " (" + unfinishedTasks.size() + " tasks not completed)");
-                
+
                 // Also send to parent if available
                 if (parent != null && parent.getEmail() != null && !parent.getEmail().isEmpty()) {
                     String parentName = parent.getFirstName() + " " + parent.getLastName();
