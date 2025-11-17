@@ -135,10 +135,21 @@ public class NotificationScheduler {
 
                 String studentName = student.getFirstName() + " " + student.getLastName();
 
-                // Try to send to parent first, otherwise send to student
+                // Send to both parent AND student
                 Parent parent = student.getParent();
+                
+                // Always send to student
+                sendGridEmailService.sendHomeworkAlert(
+                        student.getEmail(),
+                        studentName,
+                        studentName,
+                        unfinishedTasks.size(),
+                        taskList.toString());
+                System.out.println("⚠️ Sent homework alert to student " + studentName +
+                        " (" + unfinishedTasks.size() + " tasks not completed)");
+                
+                // Also send to parent if available
                 if (parent != null && parent.getEmail() != null && !parent.getEmail().isEmpty()) {
-                    // Send to parent
                     String parentName = parent.getFirstName() + " " + parent.getLastName();
                     sendGridEmailService.sendHomeworkAlert(
                             parent.getEmail(),
@@ -146,18 +157,7 @@ public class NotificationScheduler {
                             studentName,
                             unfinishedTasks.size(),
                             taskList.toString());
-                    System.out.println("⚠️ Sent homework alert to parent of " + studentName +
-                            " (" + unfinishedTasks.size() + " tasks not completed)");
-                } else {
-                    // No parent or parent email unavailable - send to student
-                    sendGridEmailService.sendHomeworkAlert(
-                            student.getEmail(),
-                            studentName,
-                            studentName,
-                            unfinishedTasks.size(),
-                            taskList.toString());
-                    System.out.println("⚠️ Sent homework alert directly to student " + studentName +
-                            " (" + unfinishedTasks.size() + " tasks not completed)");
+                    System.out.println("⚠️ Also sent homework alert to parent " + parentName);
                 }
             }
 
