@@ -2,7 +2,6 @@ package com.example.IntegrationProjectBackend.controllers;
 
 import com.example.IntegrationProjectBackend.dtos.ScheduleGenerationRequest;
 import com.example.IntegrationProjectBackend.dtos.ScheduleGenerationResponse;
-import com.example.IntegrationProjectBackend.services.MLServiceHealthCheckService;
 import com.example.IntegrationProjectBackend.services.ScheduleGeneratorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,9 +18,6 @@ public class ScheduleGeneratorController {
 
     @Autowired
     private ScheduleGeneratorService scheduleGeneratorService;
-
-    @Autowired
-    private MLServiceHealthCheckService mlServiceHealthCheckService;
 
     /**
      * Generate a new schedule for a student using AI
@@ -118,7 +114,6 @@ public class ScheduleGeneratorController {
         return ResponseEntity.ok(Map.of(
                 "status", "UP",
                 "service", "Schedule Generator API",
-                "mlServiceUrl", mlServiceHealthCheckService.getMLServiceUrl(),
-                "mlServiceAvailable", mlServiceHealthCheckService.isMLServiceAvailable()));
+                "aiService", "Spring AI with Groq (llama-3.3-70b-versatile)"));
     }
 }
