@@ -43,8 +43,9 @@ public class NotificationScheduler {
             System.out.println("🔍 Looking for revision sessions on: " + today);
 
             for (Student student : allStudents) {
+                // Use custom query that handles NULL as uncompleted
                 List<GeneratedSchedule> todaysTasks = generatedScheduleRepository
-                        .findByStudentAndDayAndCompleted(student, today, false);
+                        .findUncompletedByStudentAndDay(student, today);
 
                 for (GeneratedSchedule task : todaysTasks) {
                     if (task.getActivity() != null &&
