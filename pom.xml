@@ -79,14 +79,8 @@
             <artifactId>spring-dotenv</artifactId>
             <version>2.5.4</version>
         </dependency>
-		
-		<!-- Email Support -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-mail</artifactId>
-		</dependency>
 
-		<!-- SendGrid for email (works on Render free tier) -->
+		<!-- SendGrid for email (HTTP API, works on Render free tier) -->
 		<dependency>
 			<groupId>com.sendgrid</groupId>
 			<artifactId>sendgrid-java</artifactId>
