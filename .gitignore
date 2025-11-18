@@ -34,3 +34,8 @@ build/
 
 ### Application Properties with API Keys ###
 .env
+
+### Deleted/Unnecessary Files ###
+src/main/java/com/example/IntegrationProjectBackend/services/EmailService.java
+src/main/java/com/example/IntegrationProjectBackend/services/MLServiceHealthCheckService.java
+src/main/java/com/example/IntegrationProjectBackend/services/NotificationSchedulerNew.java
