@@ -96,12 +96,8 @@ public class NotificationScheduler {
         }
     }
 
-    /**
-     * Runs every day at 11:00 PM (23:00) Tunisia time to check if students
-     * marked homework as finished
-     * Sends to parent if available, otherwise sends to student directly
-     */
-    @Scheduled(cron = "0 0 23 * * *") // 23:00 Tunisia time (server timezone is Africa/Tunis)
+
+    @Scheduled(cron = "0 0 23 * * *") // 23:00 every day
     public void checkUnfinishedHomework() {
         System.out.println("🔔 [" + LocalDateTime.now() + "] Checking for unfinished homework...");
 

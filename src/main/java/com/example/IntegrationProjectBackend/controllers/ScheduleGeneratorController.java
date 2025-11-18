@@ -1,6 +1,5 @@
 package com.example.IntegrationProjectBackend.controllers;
 
-import com.example.IntegrationProjectBackend.dtos.ScheduleGenerationRequest;
 import com.example.IntegrationProjectBackend.dtos.ScheduleGenerationResponse;
 import com.example.IntegrationProjectBackend.services.ScheduleGeneratorService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,31 +17,6 @@ public class ScheduleGeneratorController {
 
     @Autowired
     private ScheduleGeneratorService scheduleGeneratorService;
-
-    /**
-     * Generate a new schedule for a student using AI
-     * POST /api/schedule/generate/{studentCin}
-     */
-    @PostMapping("/generate/{studentCin}")
-    public ResponseEntity<ScheduleGenerationResponse> generateSchedule(
-            @PathVariable String studentCin,
-            @RequestBody ScheduleGenerationRequest request) {
-        try {
-            ScheduleGenerationResponse response = scheduleGeneratorService.generateSchedule(studentCin, request);
-
-            if (response.isSuccess()) {
-                return ResponseEntity.ok(response);
-            } else {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-            }
-        } catch (Exception e) {
-            ScheduleGenerationResponse errorResponse = new ScheduleGenerationResponse(
-                    null,
-                    "Error generating schedule: " + e.getMessage(),
-                    false);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-        }
-    }
 
     /**
      * Generate schedule from uploaded PDF timetable

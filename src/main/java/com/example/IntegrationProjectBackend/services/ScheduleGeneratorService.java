@@ -1,6 +1,5 @@
 package com.example.IntegrationProjectBackend.services;
 
-import com.example.IntegrationProjectBackend.dtos.ScheduleGenerationRequest;
 import com.example.IntegrationProjectBackend.dtos.ScheduleGenerationResponse;
 import com.example.IntegrationProjectBackend.models.GeneratedSchedule;
 import com.example.IntegrationProjectBackend.models.Student;
@@ -29,80 +28,6 @@ public class ScheduleGeneratorService {
 
     @Autowired
     private AIScheduleService aiScheduleService; // Spring AI for Groq
-
-    /**
-     * Generate schedule using Groq AI (via Spring AI)
-     */
-    @Transactional
-    public ScheduleGenerationResponse generateSchedule(String studentCin, ScheduleGenerationRequest request) {
-        try {
-            System.out.println("[ScheduleGenerator] Starting schedule generation for student: " + studentCin);
-
-            // 1. Find student
-            Student student = studentRepository.findByCin(studentCin)
-                    .orElseThrow(() -> new RuntimeException("Student not found with CIN: " + studentCin));
-
-            // 2. Prepare subjects data for AI
-            List<Map<String, Object>> subjectsData = new ArrayList<>();
-            for (var subjectRequest : request.getSubjects()) {
-                Map<String, Object> subjectMap = new HashMap<>();
-                subjectMap.put("name", subjectRequest.getName());
-                subjectMap.put("difficulty", subjectRequest.getDifficulty());
-                subjectMap.put("hoursPerWeek", subjectRequest.getHoursPerWeek());
-                subjectsData.add(subjectMap);
-            }
-
-            // 3. Prepare preferences
-            Map<String, Object> preferences = new HashMap<>();
-            preferences.put("dailyStudyHours", request.getMaxStudyDuration());
-            preferences.put("preferredTime", "morning");
-
-            // 4. Call AI service to generate schedule
-            System.out.println("[ScheduleGenerator] Calling AI service...");
-            Object aiResponse = aiScheduleService.generateSchedule(subjectsData, request.getMaxStudyDuration(),
-                    preferences);
-
-            System.out.println("[ScheduleGenerator] AI response received");
-
-            // 5. Parse AI response
-            @SuppressWarnings("unchecked")
-            Map<String, Object> aiResponseMap = (Map<String, Object>) aiResponse;
-            @SuppressWarnings("unchecked")
-            Map<String, Map<String, Map<String, Object>>> scheduleData = (Map<String, Map<String, Map<String, Object>>>) aiResponseMap
-                    .get("schedule");
-
-            if (scheduleData == null) {
-                scheduleData = (Map<String, Map<String, Map<String, Object>>>) aiResponse;
-            }
-
-            // 6. Delete old schedules for this student
-            generatedScheduleRepository.deleteByStudent(student);
-
-            // 7. Generate unique session ID
-            String sessionId = UUID.randomUUID().toString();
-
-            // 8. Save to database
-            saveGeneratedSchedule(student, scheduleData, sessionId);
-
-            // 9. Prepare response
-            Map<String, Map<String, ScheduleGenerationResponse.ActivityBlock>> responseSchedule = convertToResponseFormat(
-                    scheduleData);
-
-            System.out.println("[ScheduleGenerator] Schedule saved successfully");
-            return new ScheduleGenerationResponse(
-                    responseSchedule,
-                    "Schedule generated successfully with AI",
-                    true);
-
-        } catch (Exception e) {
-            System.err.println("[ScheduleGenerator] Error: " + e.getMessage());
-            e.printStackTrace();
-            return new ScheduleGenerationResponse(
-                    null,
-                    "Error: " + e.getMessage(),
-                    false);
-        }
-    }
 
     /**
      * Save generated schedule to database
