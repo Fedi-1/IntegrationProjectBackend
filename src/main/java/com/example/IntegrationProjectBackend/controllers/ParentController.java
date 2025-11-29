@@ -149,9 +149,12 @@ public class ParentController {
             scheduleItems.add(item);
         }
 
-        // Calculate stats
-        long totalSessions = todaySchedules.size();
+        // Calculate stats (excluding breaks)
+        long totalSessions = todaySchedules.stream()
+                .filter(s -> !"break".equalsIgnoreCase(s.getActivity()))
+                .count();
         long completedSessions = todaySchedules.stream()
+                .filter(s -> !"break".equalsIgnoreCase(s.getActivity()))
                 .filter(s -> s.getCompleted() != null && s.getCompleted())
                 .count();
 
