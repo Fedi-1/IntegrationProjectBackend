@@ -130,4 +130,156 @@ public class SendGridEmailService {
 
         sendEmail(toEmail, "📝 Quiz Score Notification - " + studentName, body);
     }
+
+    /**
+     * Send password reset email with HTML template
+     */
+    public void sendPasswordResetEmail(String toEmail, String userName, String resetToken, String frontendUrl) {
+        if (!isConfigured()) {
+            System.err.println("❌ SendGrid not configured. Set SENDGRID_API_KEY environment variable.");
+            throw new RuntimeException("Email service not configured");
+        }
+
+        String resetLink = frontendUrl + "/reset-password?token=" + resetToken;
+        String htmlContent = buildPasswordResetEmailHtml(userName, resetLink);
+
+        try {
+            Email from = new Email(fromEmail, "Integration Project");
+            Email to = new Email(toEmail);
+            Content content = new Content("text/html", htmlContent);
+            Mail mail = new Mail(from, "🔐 Réinitialisation de votre mot de passe", to, content);
+
+            SendGrid sg = new SendGrid(sendGridApiKey);
+            Request request = new Request();
+            request.setMethod(Method.POST);
+            request.setEndpoint("mail/send");
+            request.setBody(mail.build());
+
+            Response response = sg.api(request);
+
+            if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
+                System.out.println("✅ Password reset email sent to: " + toEmail);
+            } else {
+                System.err.println("❌ SendGrid error: " + response.getStatusCode());
+                throw new RuntimeException("Failed to send password reset email");
+            }
+
+        } catch (IOException ex) {
+            System.err.println("❌ Error sending password reset email: " + ex.getMessage());
+            throw new RuntimeException("Error sending email: " + ex.getMessage(), ex);
+        }
+    }
+
+    /**
+     * Send password changed confirmation email
+     */
+    public void sendPasswordChangedConfirmation(String toEmail, String userName) {
+        if (!isConfigured()) {
+            System.err.println("❌ SendGrid not configured.");
+            return;
+        }
+
+        String htmlContent = buildPasswordChangedEmailHtml(userName);
+
+        try {
+            Email from = new Email(fromEmail, "Integration Project");
+            Email to = new Email(toEmail);
+            Content content = new Content("text/html", htmlContent);
+            Mail mail = new Mail(from, "✅ Votre mot de passe a été modifié", to, content);
+
+            SendGrid sg = new SendGrid(sendGridApiKey);
+            Request request = new Request();
+            request.setMethod(Method.POST);
+            request.setEndpoint("mail/send");
+            request.setBody(mail.build());
+
+            Response response = sg.api(request);
+
+            if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
+                System.out.println("✅ Password confirmation email sent to: " + toEmail);
+            }
+
+        } catch (IOException ex) {
+            System.err.println("⚠️ Failed to send confirmation email: " + ex.getMessage());
+        }
+    }
+
+    private String buildPasswordResetEmailHtml(String userName, String resetLink) {
+        return "<!DOCTYPE html>" +
+                "<html>" +
+                "<head>" +
+                "    <meta charset='UTF-8'>" +
+                "    <style>" +
+                "        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }" +
+                "        .container { max-width: 600px; margin: 0 auto; padding: 20px; }" +
+                "        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }" +
+                "        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }" +
+                "        .button { display: inline-block; padding: 15px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 20px 0; }" +
+                "        .warning { background: #fff3cd; border-left: 4px solid #ffc107; padding: 10px; margin: 20px 0; }" +
+                "        .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #777; }" +
+                "    </style>" +
+                "</head>" +
+                "<body>" +
+                "    <div class='container'>" +
+                "        <div class='header'>" +
+                "            <h1>🔐 Réinitialisation du mot de passe</h1>" +
+                "        </div>" +
+                "        <div class='content'>" +
+                "            <p>Bonjour <strong>" + userName + "</strong>,</p>" +
+                "            <p>Vous avez demandé la réinitialisation de votre mot de passe.</p>" +
+                "            <p>Cliquez sur le bouton ci-dessous pour définir un nouveau mot de passe :</p>" +
+                "            <div style='text-align: center;'>" +
+                "                <a href='" + resetLink + "' class='button'>Réinitialiser mon mot de passe</a>" +
+                "            </div>" +
+                "            <div class='warning'>" +
+                "                <strong>⚠️ Important :</strong><br>" +
+                "                - Ce lien est valable pendant <strong>30 minutes</strong><br>" +
+                "                - Si vous n'avez pas demandé cette réinitialisation, ignorez cet email<br>" +
+                "                - Ne partagez jamais ce lien avec personne" +
+                "            </div>" +
+                "            <p>Si le bouton ne fonctionne pas, copiez ce lien :</p>" +
+                "            <p style='word-break: break-all; color: #667eea;'>" + resetLink + "</p>" +
+                "        </div>" +
+                "        <div class='footer'>" +
+                "            <p>© 2025 Integration Project. Tous droits réservés.</p>" +
+                "        </div>" +
+                "    </div>" +
+                "</body>" +
+                "</html>";
+    }
+
+    private String buildPasswordChangedEmailHtml(String userName) {
+        return "<!DOCTYPE html>" +
+                "<html>" +
+                "<head>" +
+                "    <meta charset='UTF-8'>" +
+                "    <style>" +
+                "        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }" +
+                "        .container { max-width: 600px; margin: 0 auto; padding: 20px; }" +
+                "        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }" +
+                "        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }" +
+                "        .success { background: #d4edda; border-left: 4px solid #28a745; padding: 10px; margin: 20px 0; }" +
+                "        .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #777; }" +
+                "    </style>" +
+                "</head>" +
+                "<body>" +
+                "    <div class='container'>" +
+                "        <div class='header'>" +
+                "            <h1>✅ Mot de passe modifié</h1>" +
+                "        </div>" +
+                "        <div class='content'>" +
+                "            <p>Bonjour <strong>" + userName + "</strong>,</p>" +
+                "            <div class='success'>" +
+                "                <strong>✅ Succès !</strong><br>" +
+                "                Votre mot de passe a été modifié avec succès." +
+                "            </div>" +
+                "            <p>Si vous n'êtes pas à l'origine de cette modification, contactez immédiatement l'administrateur.</p>" +
+                "        </div>" +
+                "        <div class='footer'>" +
+                "            <p>© 2025 Integration Project. Tous droits réservés.</p>" +
+                "        </div>" +
+                "    </div>" +
+                "</body>" +
+                "</html>";
+    }
 }
