@@ -16,13 +16,14 @@ public class JacksonConfig {
     @Primary
     public ObjectMapper objectMapper() {
         ObjectMapper mapper = new ObjectMapper();
-        
-        // Register JavaTimeModule for Java 8 Date/Time API support (LocalDateTime, etc.)
+
+        // Register JavaTimeModule for Java 8 Date/Time API support (LocalDateTime,
+        // etc.)
         mapper.registerModule(new JavaTimeModule());
-        
+
         // Disable writing dates as timestamps - use ISO-8601 format instead
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        
+
         // Configure to handle both snake_case (from Python) and camelCase (Java)
         mapper.setPropertyNamingStrategy(PropertyNamingStrategies.LOWER_CAMEL_CASE);
 
