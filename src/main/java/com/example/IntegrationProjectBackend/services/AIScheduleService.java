@@ -1026,10 +1026,7 @@ public class AIScheduleService {
             String prompt = String.format("""
                 You are analyzing a French university timetable and generating a revision schedule.
                 
-                **Task:** In ONE response, provide:
-                1. List of subjects from the timetable
-                2. When school ends each day
-                3. Complete revision schedule
+                **IMPORTANT: You MUST return a JSON OBJECT with THREE fields: subjects, schoolEndTimes, and schedule**
                 
                 **PDF Content:**
                 %s
@@ -1038,38 +1035,53 @@ public class AIScheduleService {
                 - Preparation time after school: %d minutes
                 - Max study per session: %d minutes
                 
-                **Output Format (JSON):**
-                ```json
+                **OUTPUT FORMAT - Return this EXACT structure:**
                 {
                   "subjects": [
-                    {"name": "Subject Name", "hoursPerWeek": 3, "difficulty": "medium"}
+                    {"name": "Atelier Développement Mobile", "hoursPerWeek": 3, "difficulty": "medium"},
+                    {"name": "Intelligence Artificielle", "hoursPerWeek": 1.5, "difficulty": "hard"}
                   ],
                   "schoolEndTimes": {
-                    "Monday": "18:00",
-                    "Tuesday": "16:00"
+                    "Lundi": "18:00",
+                    "Mardi": "16:00",
+                    "Mercredi": "14:00",
+                    "Jeudi": "18:00",
+                    "Vendredi": "16:00",
+                    "Samedi": "12:00"
                   },
                   "schedule": [
                     {
-                      "day": "Monday",
+                      "day": "Lundi",
                       "timeSlot": "18:30-19:20",
                       "activity": "study",
-                      "subject": "Subject Name",
-                      "topic": "Chapter 1",
+                      "subject": "Atelier Développement Mobile",
+                      "topic": "Révision chapitre 1",
+                      "duration_minutes": 50
+                    },
+                    {
+                      "day": "Lundi",
+                      "timeSlot": "19:30-20:20",
+                      "activity": "study",
+                      "subject": "Intelligence Artificielle",
+                      "topic": "Révision chapitre 1",
                       "duration_minutes": 50
                     }
                   ]
                 }
-                ```
                 
-                **Rules:**
-                - Extract ALL subjects from timetable
-                - Find last class end time for each day
-                - Start revision after: school_end_time + preparation_time
-                - Include 10-minute breaks every hour
-                - Alternate subjects for variety
-                - Return ONLY valid JSON, no explanation
+                **CRITICAL RULES:**
+                1. Response MUST be a JSON object (starts with "{", not "[")
+                2. MUST include all 3 fields: subjects, schoolEndTimes, schedule
+                3. Extract ALL subjects from the timetable
+                4. Find the last class end time for each day
+                5. Generate study sessions starting at: school_end_time + %d minutes
+                6. Add 10-minute breaks between study sessions
+                7. Alternate between different subjects
+                8. Maximum %d minutes per study session
+                9. Return ONLY the JSON object, no markdown, no explanation
                 """, 
                 pdfContent.substring(0, Math.min(3000, pdfContent.length())), 
+                preparationTime,
                 preparationTime,
                 maxStudyDuration
             );
