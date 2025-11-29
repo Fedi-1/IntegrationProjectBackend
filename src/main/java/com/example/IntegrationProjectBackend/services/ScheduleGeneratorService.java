@@ -186,26 +186,9 @@ public class ScheduleGeneratorService {
             System.out.println("[ScheduleGenerator] PDF content extracted: "
                     + pdfContent.substring(0, Math.min(200, pdfContent.length())) + "...");
 
-            // 3. Get student's preparation time (default to 30 minutes if not set)
-            int preparationTime = student.getPreparationTimeMinutes() != null
-                    ? student.getPreparationTimeMinutes()
-                    : 30;
-            System.out.println("[ScheduleGenerator] Student preparation time: " + preparationTime + " minutes");
+            // 3. Extract subjects from PDF using AI
+            List<Map<String, Object>> extractedSubjects = aiScheduleService.extractSubjectsFromText(pdfContent);
 
-            // 4. 🚀 OPTIMIZED: Generate everything in ONE AI call (subjects + times + schedule)
-            System.out.println("[ScheduleGenerator] 🚀 Using OPTIMIZED single-call generation...");
-            long startTime = System.currentTimeMillis();
-            
-            Map<String, Object> aiResponse = aiScheduleService.generateCompleteScheduleOptimized(
-                    pdfContent, maxStudyDuration, preparationTime);
-            
-            long duration = System.currentTimeMillis() - startTime;
-            System.out.println("[ScheduleGenerator] ✓ Generated in " + duration + "ms (~" + (duration/1000) + " seconds)");
-
-            // Extract subjects from optimized response
-            @SuppressWarnings("unchecked")
-            List<Map<String, Object>> extractedSubjects = (List<Map<String, Object>>) aiResponse.get("subjects");
-            
             if (extractedSubjects == null || extractedSubjects.isEmpty()) {
                 return new ScheduleGenerationResponse(
                         null,
@@ -213,47 +196,33 @@ public class ScheduleGeneratorService {
                         false);
             }
 
-            // 5. Parse optimized AI response - Extract the "schedule" field
-            Object scheduleField = aiResponse.get("schedule");
-            
-            if (scheduleField == null) {
-                return new ScheduleGenerationResponse(
-                        null,
-                        "AI response missing 'schedule' field",
-                        false);
-            }
+            System.out.println("[ScheduleGenerator] Extracted " + extractedSubjects.size() + " subjects from PDF");
 
-            System.out.println("[ScheduleGenerator] DEBUG: schedule field type = " + scheduleField.getClass().getName());
+            // 4. Extract school end times from PDF
+            Map<String, String> schoolEndTimes = aiScheduleService.extractSchoolEndTimes(pdfContent);
+            System.out.println("[ScheduleGenerator] Extracted school end times: " + schoolEndTimes);
 
-            Map<String, Map<String, Map<String, Object>>> scheduleData = null;
+            // 5. Get student's preparation time (default to 30 minutes if not set)
+            int preparationTime = student.getPreparationTimeMinutes() != null
+                    ? student.getPreparationTimeMinutes()
+                    : 30;
 
-            if (scheduleField instanceof List) {
-                // AI returned List of schedule items - convert to Map structure
-                @SuppressWarnings("unchecked")
-                List<Map<String, Object>> scheduleList = (List<Map<String, Object>>) scheduleField;
-                System.out.println("[ScheduleGenerator] Converting " + scheduleList.size() + " schedule items from List to Map format");
-                scheduleData = convertListToScheduleMap(scheduleList);
-                System.out.println("[ScheduleGenerator] Converted schedule covers " + scheduleData.size() + " days");
-            } else if (scheduleField instanceof Map) {
-                // Already in Map format - use unchecked cast
-                @SuppressWarnings("unchecked")
-                Map<String, Object> tempMap = (Map<String, Object>) scheduleField;
-                @SuppressWarnings("unchecked")
-                Map<String, Map<String, Map<String, Object>>> castedMap = (Map<String, Map<String, Map<String, Object>>>) (Object) tempMap;
-                scheduleData = castedMap;
-            } else {
-                System.err.println("[ScheduleGenerator] ERROR: Unexpected schedule structure");
-                System.err.println("[ScheduleGenerator] Type: " + scheduleField.getClass().getName());
-                return new ScheduleGenerationResponse(
-                        null,
-                        "AI returned unexpected schedule format",
-                        false);
-            }
-            
+            // 6. Generate schedule using AI with school times
+            Object scheduleResult = aiScheduleService.generateScheduleWithSchoolTimes(
+                    extractedSubjects,
+                    maxStudyDuration,
+                    new HashMap<>(), // preferences - empty for now
+                    schoolEndTimes,
+                    preparationTime);
+
+            // Parse the schedule data
+            @SuppressWarnings("unchecked")
+            Map<String, Map<String, Map<String, Object>>> scheduleData = (Map<String, Map<String, Map<String, Object>>>) scheduleResult;
+
             if (scheduleData == null || scheduleData.isEmpty()) {
                 return new ScheduleGenerationResponse(
                         null,
-                        "Generated schedule is empty",
+                        "AI was unable to generate a schedule. Please try manual schedule generation.",
                         false);
             }
 

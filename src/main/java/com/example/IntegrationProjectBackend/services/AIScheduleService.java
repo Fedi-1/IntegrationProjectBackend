@@ -1016,97 +1016,99 @@ public class AIScheduleService {
      * Reduces generation time from ~78 seconds to ~25 seconds!
      */
     public Map<String, Object> generateCompleteScheduleOptimized(
-            String pdfContent, 
-            int maxStudyDuration, 
+            String pdfContent,
+            int maxStudyDuration,
             int preparationTime) {
-        
+
         System.out.println("[AIScheduleService] 🚀 Using OPTIMIZED single-call generation");
-        
+
         try {
-            String prompt = String.format("""
-                You are analyzing a French university timetable and generating a revision schedule.
-                
-                **IMPORTANT: You MUST return a JSON OBJECT with THREE fields: subjects, schoolEndTimes, and schedule**
-                
-                **PDF Content:**
-                %s
-                
-                **Requirements:**
-                - Preparation time after school: %d minutes
-                - Max study per session: %d minutes
-                
-                **OUTPUT FORMAT - Return this EXACT structure:**
-                {
-                  "subjects": [
-                    {"name": "Atelier Développement Mobile", "hoursPerWeek": 3, "difficulty": "medium"},
-                    {"name": "Intelligence Artificielle", "hoursPerWeek": 1.5, "difficulty": "hard"}
-                  ],
-                  "schoolEndTimes": {
-                    "Lundi": "18:00",
-                    "Mardi": "16:00",
-                    "Mercredi": "14:00",
-                    "Jeudi": "18:00",
-                    "Vendredi": "16:00",
-                    "Samedi": "12:00"
-                  },
-                  "schedule": [
-                    {
-                      "day": "Lundi",
-                      "timeSlot": "18:30-19:20",
-                      "activity": "study",
-                      "subject": "Atelier Développement Mobile",
-                      "topic": "Révision chapitre 1",
-                      "duration_minutes": 50
-                    },
-                    {
-                      "day": "Lundi",
-                      "timeSlot": "19:30-20:20",
-                      "activity": "study",
-                      "subject": "Intelligence Artificielle",
-                      "topic": "Révision chapitre 1",
-                      "duration_minutes": 50
-                    }
-                  ]
-                }
-                
-                **CRITICAL RULES:**
-                1. Response MUST be a JSON object (starts with "{", not "[")
-                2. MUST include all 3 fields: subjects, schoolEndTimes, schedule
-                3. Extract ALL subjects from the timetable
-                4. Find the last class end time for each day
-                5. Generate study sessions starting at: school_end_time + %d minutes
-                6. Add 10-minute breaks between study sessions
-                7. Alternate between different subjects
-                8. Maximum %d minutes per study session
-                9. Return ONLY the JSON object, no markdown, no explanation
-                """, 
-                pdfContent.substring(0, Math.min(3000, pdfContent.length())), 
-                preparationTime,
-                preparationTime,
-                maxStudyDuration
-            );
+            String prompt = String.format(
+                    """
+                            You are analyzing a French university timetable and generating a revision schedule.
+
+                            **IMPORTANT: You MUST return a JSON OBJECT with THREE fields: subjects, schoolEndTimes, and schedule**
+
+                            **PDF Content:**
+                            %s
+
+                            **Requirements:**
+                            - Preparation time after school: %d minutes
+                            - Max study per session: %d minutes
+
+                            **OUTPUT FORMAT - Return this EXACT structure:**
+                            {
+                              "subjects": [
+                                {"name": "Atelier Développement Mobile", "hoursPerWeek": 3, "difficulty": "medium"},
+                                {"name": "Intelligence Artificielle", "hoursPerWeek": 1.5, "difficulty": "hard"}
+                              ],
+                              "schoolEndTimes": {
+                                "Lundi": "18:00",
+                                "Mardi": "16:00",
+                                "Mercredi": "14:00",
+                                "Jeudi": "18:00",
+                                "Vendredi": "16:00",
+                                "Samedi": "12:00"
+                              },
+                              "schedule": [
+                                {
+                                  "day": "Lundi",
+                                  "timeSlot": "18:30-19:20",
+                                  "activity": "study",
+                                  "subject": "Atelier Développement Mobile",
+                                  "topic": "Révision chapitre 1",
+                                  "duration_minutes": 50
+                                },
+                                {
+                                  "day": "Lundi",
+                                  "timeSlot": "19:30-20:20",
+                                  "activity": "study",
+                                  "subject": "Intelligence Artificielle",
+                                  "topic": "Révision chapitre 1",
+                                  "duration_minutes": 50
+                                }
+                              ]
+                            }
+
+                            **CRITICAL RULES:**
+                            1. Response MUST be a JSON object (starts with "{", not "[")
+                            2. MUST include all 3 fields: subjects, schoolEndTimes, schedule
+                            3. Extract ALL subjects from the timetable
+                            4. Find the last class end time for each day
+                            5. Generate study sessions starting at: school_end_time + %d minutes
+                            6. Add 10-minute breaks between study sessions
+                            7. Alternate between different subjects
+                            8. Maximum %d minutes per study session
+                            9. Return ONLY the JSON object, no markdown, no explanation
+                            """,
+                    pdfContent.substring(0, Math.min(3000, pdfContent.length())),
+                    preparationTime,
+                    preparationTime,
+                    maxStudyDuration);
 
             System.out.println("[AIScheduleService] Sending optimized request to Groq...");
             long startTime = System.currentTimeMillis();
-            
+
             var response = chatClient.prompt()
                     .user(prompt)
                     .call()
                     .content();
-            
+
             long duration = System.currentTimeMillis() - startTime;
             System.out.println("[AIScheduleService] ✓ Got response in " + duration + "ms");
 
             // Extract and clean JSON
             String cleanJson = extractJsonFromResponse(response);
-            System.out.println("[AIScheduleService] 🔍 Raw JSON (first 800 chars): " + cleanJson.substring(0, Math.min(800, cleanJson.length())));
-            
+            System.out.println("[AIScheduleService] 🔍 Raw JSON (first 800 chars): "
+                    + cleanJson.substring(0, Math.min(800, cleanJson.length())));
+
             // Parse JSON - could be object or array
             Map<String, Object> result;
-            
+
             // Check if it starts with '[' (array) instead of '{' (object)
             if (cleanJson.trim().startsWith("[")) {
-                System.out.println("[AIScheduleService] ⚠️ AI returned array instead of object, attempting to parse schedule items directly...");
+                System.out.println(
+                        "[AIScheduleService] ⚠️ AI returned array instead of object, attempting to parse schedule items directly...");
                 // If AI returns array of schedule items directly, wrap it
                 @SuppressWarnings("unchecked")
                 var scheduleArray = objectMapper.readValue(cleanJson, List.class);
@@ -1120,10 +1122,10 @@ public class AIScheduleService {
                 Map<String, Object> parsed = objectMapper.readValue(cleanJson, Map.class);
                 result = parsed;
             }
-            
+
             System.out.println("[AIScheduleService] ✓ Parsed complete schedule successfully");
             return result;
-            
+
         } catch (Exception e) {
             System.err.println("[AIScheduleService] ❌ ERROR in optimized generation: " + e.getMessage());
             e.printStackTrace();
