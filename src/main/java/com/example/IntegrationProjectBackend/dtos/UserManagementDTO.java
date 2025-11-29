@@ -1,60 +1,37 @@
-package com.example.IntegrationProjectBackend.models;
+package com.example.IntegrationProjectBackend.dtos;
 
-import jakarta.persistence.*;
+import com.example.IntegrationProjectBackend.models.Role;
 
-@Entity
-@Table(name = "users")
-@Inheritance(strategy = InheritanceType.JOINED)
-@DiscriminatorColumn(name = "dtype")
-public class User {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class UserManagementDTO {
     private Long id;
-
-    @Column(nullable = false, unique = true, length = 20)
     private String cin;
-
-    @Column(nullable = false, length = 100)
     private String firstName;
-
-    @Column(nullable = false, length = 100)
     private String lastName;
-
-    @Column(nullable = false, unique = true, length = 150)
     private String email;
-
-    @Column(nullable = false)
-    private String password;
-
-    @Column(nullable = false)
     private int age;
-
-    @Column(nullable = false, length = 20)
     private String phoneNumber;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private Role role;
+    private boolean suspended;
+    private String dtype; // For knowing if it's Student or Parent
 
-    @Column(nullable = false)
-    private boolean suspended = false;
-
-    public User() {
+    public UserManagementDTO() {
     }
 
-    public User(String cin, String firstName, String lastName, String email, String password,
-            int age, String phoneNumber, Role role) {
+    public UserManagementDTO(Long id, String cin, String firstName, String lastName, String email,
+            int age, String phoneNumber, Role role, boolean suspended, String dtype) {
+        this.id = id;
         this.cin = cin;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
-        this.password = password;
         this.age = age;
         this.phoneNumber = phoneNumber;
         this.role = role;
+        this.suspended = suspended;
+        this.dtype = dtype;
     }
 
+    // Getters and setters
     public Long getId() {
         return id;
     }
@@ -95,14 +72,6 @@ public class User {
         this.email = email;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
     public int getAge() {
         return age;
     }
@@ -133,5 +102,13 @@ public class User {
 
     public void setSuspended(boolean suspended) {
         this.suspended = suspended;
+    }
+
+    public String getDtype() {
+        return dtype;
+    }
+
+    public void setDtype(String dtype) {
+        this.dtype = dtype;
     }
 }
