@@ -137,6 +137,11 @@ public class AuthService {
                 return new AuthResponse(false, "Invalid email or password");
             }
 
+            // Check if account is suspended
+            if (user.isSuspended()) {
+                return new AuthResponse(false, "Your account has been suspended. Please contact the administrator.");
+            }
+
             // Convert to DTO
             UserDTO userDTO = convertToDTO(user);
 
