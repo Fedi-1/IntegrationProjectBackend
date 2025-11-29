@@ -3,6 +3,8 @@ package com.example.IntegrationProjectBackend.config;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -14,6 +16,13 @@ public class JacksonConfig {
     @Primary
     public ObjectMapper objectMapper() {
         ObjectMapper mapper = new ObjectMapper();
+        
+        // Register JavaTimeModule for Java 8 Date/Time API support (LocalDateTime, etc.)
+        mapper.registerModule(new JavaTimeModule());
+        
+        // Disable writing dates as timestamps - use ISO-8601 format instead
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        
         // Configure to handle both snake_case (from Python) and camelCase (Java)
         mapper.setPropertyNamingStrategy(PropertyNamingStrategies.LOWER_CAMEL_CASE);
 
