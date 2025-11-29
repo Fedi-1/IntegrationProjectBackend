@@ -217,18 +217,18 @@ public class ScheduleGeneratorService {
 
             // Parse the schedule data - AI returns a List, we need Map structure
             Map<String, Map<String, Map<String, Object>>> scheduleData;
-            
+
             if (scheduleResult instanceof List) {
                 // AI returned List of schedule items - convert to Map structure
                 @SuppressWarnings("unchecked")
                 List<Map<String, Object>> scheduleList = (List<Map<String, Object>>) scheduleResult;
-                System.out.println("[ScheduleGenerator] Converting " + scheduleList.size() + " schedule items to Map format");
+                System.out.println(
+                        "[ScheduleGenerator] Converting " + scheduleList.size() + " schedule items to Map format");
                 scheduleData = convertListToScheduleMap(scheduleList);
             } else if (scheduleResult instanceof Map) {
                 // Already in Map format
                 @SuppressWarnings("unchecked")
-                Map<String, Map<String, Map<String, Object>>> castedMap = 
-                    (Map<String, Map<String, Map<String, Object>>>) scheduleResult;
+                Map<String, Map<String, Map<String, Object>>> castedMap = (Map<String, Map<String, Map<String, Object>>>) scheduleResult;
                 scheduleData = castedMap;
             } else {
                 return new ScheduleGenerationResponse(
