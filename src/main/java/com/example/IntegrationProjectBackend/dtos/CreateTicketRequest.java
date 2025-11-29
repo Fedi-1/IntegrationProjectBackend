@@ -15,7 +15,8 @@ public class CreateTicketRequest {
     @NotNull(message = "Priority is required")
     private TicketPriority priority;
 
-    public CreateTicketRequest() {}
+    public CreateTicketRequest() {
+    }
 
     public CreateTicketRequest(String subject, String description, TicketPriority priority) {
         this.subject = subject;

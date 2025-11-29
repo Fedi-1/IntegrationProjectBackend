@@ -41,7 +41,8 @@ public class SupportTicket {
     private List<SupportMessage> messages = new ArrayList<>();
 
     // Constructors
-    public SupportTicket() {}
+    public SupportTicket() {
+    }
 
     public SupportTicket(String subject, String description, User createdBy, TicketPriority priority) {
         this.subject = subject;

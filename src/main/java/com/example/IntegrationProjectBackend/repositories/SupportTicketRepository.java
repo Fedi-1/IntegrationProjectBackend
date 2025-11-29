@@ -30,7 +30,7 @@ public interface SupportTicketRepository extends JpaRepository<SupportTicket, Lo
 
     // Search tickets
     @Query("SELECT t FROM SupportTicket t WHERE " +
-           "LOWER(t.subject) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(t.description) LIKE LOWER(CONCAT('%', :search, '%'))")
+            "LOWER(t.subject) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(t.description) LIKE LOWER(CONCAT('%', :search, '%'))")
     List<SupportTicket> searchTickets(@Param("search") String search);
 }

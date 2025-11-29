@@ -8,7 +8,8 @@ public class UpdateTicketStatusRequest {
     @NotNull(message = "Status is required")
     private TicketStatus status;
 
-    public UpdateTicketStatusRequest() {}
+    public UpdateTicketStatusRequest() {
+    }
 
     public UpdateTicketStatusRequest(TicketStatus status) {
         this.status = status;

@@ -19,8 +19,10 @@ public class SupportTicketDTO {
     private LocalDateTime updatedAt;
     private int messageCount;
     private List<SupportMessageDTO> messages;
+    private String userName; // For admin view
 
-    public SupportTicketDTO() {}
+    public SupportTicketDTO() {
+    }
 
     // Getters and Setters
     public Long getId() {
@@ -117,5 +119,13 @@ public class SupportTicketDTO {
 
     public void setMessages(List<SupportMessageDTO> messages) {
         this.messages = messages;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 }

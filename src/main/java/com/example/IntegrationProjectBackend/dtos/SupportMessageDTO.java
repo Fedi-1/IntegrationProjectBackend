@@ -11,10 +11,11 @@ public class SupportMessageDTO {
     private LocalDateTime createdAt;
     private boolean isAdminReply;
 
-    public SupportMessageDTO() {}
+    public SupportMessageDTO() {
+    }
 
-    public SupportMessageDTO(Long id, Long ticketId, Long senderId, String senderName, 
-                           String message, LocalDateTime createdAt, boolean isAdminReply) {
+    public SupportMessageDTO(Long id, Long ticketId, Long senderId, String senderName,
+            String message, LocalDateTime createdAt, boolean isAdminReply) {
         this.id = id;
         this.ticketId = ticketId;
         this.senderId = senderId;
@@ -79,5 +80,14 @@ public class SupportMessageDTO {
 
     public void setAdminReply(boolean adminReply) {
         isAdminReply = adminReply;
+    }
+
+    // Alternative getters for frontend compatibility
+    public boolean isAdminMessage() {
+        return isAdminReply;
+    }
+
+    public String getContent() {
+        return message;
     }
 }

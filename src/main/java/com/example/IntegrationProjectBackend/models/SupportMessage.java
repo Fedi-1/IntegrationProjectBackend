@@ -29,7 +29,8 @@ public class SupportMessage {
     private boolean isAdminReply = false;
 
     // Constructors
-    public SupportMessage() {}
+    public SupportMessage() {
+    }
 
     public SupportMessage(SupportTicket ticket, User sender, String message, boolean isAdminReply) {
         this.ticket = ticket;

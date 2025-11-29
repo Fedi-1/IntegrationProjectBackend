@@ -28,9 +28,9 @@ public class SupportController {
     public ResponseEntity<AdminResponse> createTicket(
             @RequestParam Long userId,
             @Valid @RequestBody CreateTicketRequest request) {
-        
+
         AdminResponse response = supportService.createTicket(userId, request);
-        
+
         if (response.isSuccess()) {
             return ResponseEntity.ok(response);
         } else {
@@ -77,13 +77,28 @@ public class SupportController {
     @GetMapping("/tickets/{ticketId}")
     public ResponseEntity<?> getTicketById(@PathVariable Long ticketId) {
         Optional<SupportTicketDTO> ticket = supportService.getTicketById(ticketId);
-        
+
         if (ticket.isPresent()) {
             return ResponseEntity.ok(ticket.get());
         } else {
             return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
                     .body(new AdminResponse(false, "Ticket not found"));
+        }
+    }
+
+    /**
+     * Get messages for a ticket
+     * GET /api/support/tickets/{ticketId}/messages
+     */
+    @GetMapping("/tickets/{ticketId}/messages")
+    public ResponseEntity<List<SupportMessageDTO>> getTicketMessages(@PathVariable Long ticketId) {
+        Optional<SupportTicketDTO> ticket = supportService.getTicketById(ticketId);
+
+        if (ticket.isPresent() && ticket.get().getMessages() != null) {
+            return ResponseEntity.ok(ticket.get().getMessages());
+        } else {
+            return ResponseEntity.ok(List.of());
         }
     }
 
@@ -96,9 +111,9 @@ public class SupportController {
             @PathVariable Long ticketId,
             @RequestParam Long userId,
             @Valid @RequestBody SendMessageRequest request) {
-        
+
         AdminResponse response = supportService.sendMessage(ticketId, userId, request);
-        
+
         if (response.isSuccess()) {
             return ResponseEntity.ok(response);
         } else {
@@ -116,9 +131,29 @@ public class SupportController {
     public ResponseEntity<AdminResponse> updateTicketStatus(
             @PathVariable Long ticketId,
             @Valid @RequestBody UpdateTicketStatusRequest request) {
-        
+
         AdminResponse response = supportService.updateTicketStatus(ticketId, request.getStatus());
-        
+
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(response);
+        }
+    }
+
+    /**
+     * Update ticket priority
+     * PUT /api/support/tickets/{ticketId}/priority
+     */
+    @PutMapping("/tickets/{ticketId}/priority")
+    public ResponseEntity<AdminResponse> updateTicketPriority(
+            @PathVariable Long ticketId,
+            @Valid @RequestBody UpdateTicketPriorityRequest request) {
+
+        AdminResponse response = supportService.updateTicketPriority(ticketId, request.getPriority());
+
         if (response.isSuccess()) {
             return ResponseEntity.ok(response);
         } else {

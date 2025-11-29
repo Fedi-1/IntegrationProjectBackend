@@ -38,8 +38,7 @@ public class SupportService {
                     request.getSubject(),
                     request.getDescription(),
                     user,
-                    request.getPriority()
-            );
+                    request.getPriority());
 
             ticket = ticketRepository.save(ticket);
 
@@ -148,6 +147,25 @@ public class SupportService {
     }
 
     /**
+     * Update ticket priority
+     */
+    @Transactional
+    public AdminResponse updateTicketPriority(Long ticketId, TicketPriority priority) {
+        try {
+            SupportTicket ticket = ticketRepository.findById(ticketId)
+                    .orElseThrow(() -> new RuntimeException("Ticket not found"));
+
+            ticket.setPriority(priority);
+            ticketRepository.save(ticket);
+
+            return new AdminResponse(true, "Ticket priority updated successfully", convertToDTO(ticket, false));
+
+        } catch (Exception e) {
+            return new AdminResponse(false, "Failed to update ticket priority: " + e.getMessage());
+        }
+    }
+
+    /**
      * Get ticket statistics
      */
     public AdminResponse getStatistics() {
@@ -178,7 +196,9 @@ public class SupportService {
         dto.setStatus(ticket.getStatus());
         dto.setPriority(ticket.getPriority());
         dto.setCreatedById(ticket.getCreatedBy().getId());
-        dto.setCreatedByName(ticket.getCreatedBy().getFirstName() + " " + ticket.getCreatedBy().getLastName());
+        String fullName = ticket.getCreatedBy().getFirstName() + " " + ticket.getCreatedBy().getLastName();
+        dto.setCreatedByName(fullName);
+        dto.setUserName(fullName); // For admin view
         dto.setCreatedByEmail(ticket.getCreatedBy().getEmail());
         dto.setCreatedAt(ticket.getCreatedAt());
         dto.setUpdatedAt(ticket.getUpdatedAt());
@@ -205,7 +225,6 @@ public class SupportService {
                 message.getSender().getFirstName() + " " + message.getSender().getLastName(),
                 message.getMessage(),
                 message.getCreatedAt(),
-                message.isAdminReply()
-        );
+                message.isAdminReply());
     }
 }
