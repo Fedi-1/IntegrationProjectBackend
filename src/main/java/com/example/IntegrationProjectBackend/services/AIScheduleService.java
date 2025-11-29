@@ -1085,9 +1085,29 @@ public class AIScheduleService {
             long duration = System.currentTimeMillis() - startTime;
             System.out.println("[AIScheduleService] ✓ Got response in " + duration + "ms");
 
+            // Extract and clean JSON
             String cleanJson = extractJsonFromResponse(response);
-            @SuppressWarnings("unchecked")
-            Map<String, Object> result = objectMapper.readValue(cleanJson, Map.class);
+            System.out.println("[AIScheduleService] 🔍 Raw JSON (first 800 chars): " + cleanJson.substring(0, Math.min(800, cleanJson.length())));
+            
+            // Parse JSON - could be object or array
+            Map<String, Object> result;
+            
+            // Check if it starts with '[' (array) instead of '{' (object)
+            if (cleanJson.trim().startsWith("[")) {
+                System.out.println("[AIScheduleService] ⚠️ AI returned array instead of object, attempting to parse schedule items directly...");
+                // If AI returns array of schedule items directly, wrap it
+                @SuppressWarnings("unchecked")
+                var scheduleArray = objectMapper.readValue(cleanJson, List.class);
+                result = new HashMap<>();
+                result.put("subjects", new ArrayList<>());
+                result.put("schoolEndTimes", new HashMap<>());
+                result.put("schedule", scheduleArray);
+            } else {
+                // Normal case: object with subjects, schoolEndTimes, schedule
+                @SuppressWarnings("unchecked")
+                Map<String, Object> parsed = objectMapper.readValue(cleanJson, Map.class);
+                result = parsed;
+            }
             
             System.out.println("[AIScheduleService] ✓ Parsed complete schedule successfully");
             return result;
