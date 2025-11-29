@@ -40,7 +40,7 @@ public class PasswordResetService {
     @Transactional
     public void initiatePasswordReset(String email) {
         Optional<User> userOpt = userRepository.findByEmail(email);
-        
+
         if (userOpt.isEmpty()) {
             // For security, don't reveal if email exists
             System.out.println("⚠️ Password reset requested for non-existent email: " + email);
@@ -48,17 +48,17 @@ public class PasswordResetService {
         }
 
         User user = userOpt.get();
-        
+
         // Delete any existing tokens for this user
         tokenRepository.deleteByUser(user);
 
         // Generate secure token
         String token = generateSecureToken();
-        
+
         // Create token entity
         LocalDateTime expiryDate = LocalDateTime.now().plusMinutes(TOKEN_EXPIRY_MINUTES);
         PasswordResetToken resetToken = new PasswordResetToken(token, user, expiryDate);
-        
+
         tokenRepository.save(resetToken);
 
         // Send email
@@ -75,7 +75,7 @@ public class PasswordResetService {
     @Transactional
     public void resetPassword(String token, String newPassword) {
         Optional<PasswordResetToken> tokenOpt = tokenRepository.findByToken(token);
-        
+
         if (tokenOpt.isEmpty()) {
             throw new RuntimeException("Token invalide");
         }
@@ -118,7 +118,7 @@ public class PasswordResetService {
 
     public boolean validateToken(String token) {
         Optional<PasswordResetToken> tokenOpt = tokenRepository.findByToken(token);
-        
+
         if (tokenOpt.isEmpty()) {
             return false;
         }
@@ -131,7 +131,7 @@ public class PasswordResetService {
         SecureRandom random = new SecureRandom();
         byte[] bytes = new byte[TOKEN_LENGTH];
         random.nextBytes(bytes);
-        
+
         return Base64.getUrlEncoder()
                 .withoutPadding()
                 .encodeToString(bytes);

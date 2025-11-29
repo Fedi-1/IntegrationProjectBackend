@@ -12,15 +12,15 @@ import java.util.Optional;
 
 @Repository
 public interface PasswordResetTokenRepository extends JpaRepository<PasswordResetToken, Long> {
-    
+
     Optional<PasswordResetToken> findByToken(String token);
-    
+
     Optional<PasswordResetToken> findByUser(User user);
-    
+
     @Modifying
     @Query("DELETE FROM PasswordResetToken p WHERE p.expiryDate < ?1")
     void deleteExpiredTokens(LocalDateTime now);
-    
+
     @Modifying
     @Query("DELETE FROM PasswordResetToken p WHERE p.user = ?1")
     void deleteByUser(User user);

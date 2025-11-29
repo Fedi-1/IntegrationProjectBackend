@@ -9,6 +9,7 @@ import com.example.IntegrationProjectBackend.repositories.ParentRepository;
 import com.example.IntegrationProjectBackend.repositories.StudentRepository;
 import com.example.IntegrationProjectBackend.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +26,9 @@ public class AuthService {
 
     @Autowired
     private ParentRepository parentRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Transactional
     public AuthResponse signup(SignupRequest request) {
@@ -68,7 +72,7 @@ public class AuthService {
                 student.setFirstName(request.getFirstName());
                 student.setLastName(request.getLastName());
                 student.setEmail(request.getEmail());
-                student.setPassword(request.getPassword()); // In production, hash this!
+                student.setPassword(passwordEncoder.encode(request.getPassword())); // Encrypt password with BCrypt
                 student.setCin(request.getCin());
                 student.setPhoneNumber(request.getPhoneNumber());
                 student.setAge(request.getAge());
@@ -95,7 +99,7 @@ public class AuthService {
                 parent.setFirstName(request.getFirstName());
                 parent.setLastName(request.getLastName());
                 parent.setEmail(request.getEmail());
-                parent.setPassword(request.getPassword()); // In production, hash this!
+                parent.setPassword(passwordEncoder.encode(request.getPassword())); // Encrypt password with BCrypt
                 parent.setCin(request.getCin());
                 parent.setPhoneNumber(request.getPhoneNumber());
                 parent.setAge(request.getAge());
@@ -107,7 +111,7 @@ public class AuthService {
                 newUser.setFirstName(request.getFirstName());
                 newUser.setLastName(request.getLastName());
                 newUser.setEmail(request.getEmail());
-                newUser.setPassword(request.getPassword()); // In production, hash this!
+                newUser.setPassword(passwordEncoder.encode(request.getPassword())); // Encrypt password with BCrypt
                 newUser.setCin(request.getCin());
                 newUser.setPhoneNumber(request.getPhoneNumber());
                 newUser.setAge(request.getAge());
@@ -132,8 +136,8 @@ public class AuthService {
             User user = userRepository.findByEmail(request.getEmail())
                     .orElseThrow(() -> new RuntimeException("Invalid email or password"));
 
-            // Check password (In production, use BCrypt!)
-            if (!user.getPassword().equals(request.getPassword())) {
+            // Check password using BCrypt
+            if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
                 return new AuthResponse(false, "Invalid email or password");
             }
 

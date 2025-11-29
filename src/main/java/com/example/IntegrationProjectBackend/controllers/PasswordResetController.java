@@ -23,20 +23,20 @@ public class PasswordResetController {
         try {
             if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
                 return ResponseEntity.badRequest()
-                    .body(createErrorResponse("L'email est requis"));
+                        .body(createErrorResponse("L'email est requis"));
             }
 
             passwordResetService.initiatePasswordReset(request.getEmail());
-            
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Si cet email existe, un lien de réinitialisation a été envoyé");
-            
+
             return ResponseEntity.ok(response);
-            
+
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
-                .body(createErrorResponse(e.getMessage()));
+                    .body(createErrorResponse(e.getMessage()));
         }
     }
 
@@ -45,28 +45,28 @@ public class PasswordResetController {
         try {
             if (request.getToken() == null || request.getToken().trim().isEmpty()) {
                 return ResponseEntity.badRequest()
-                    .body(createErrorResponse("Token invalide"));
+                        .body(createErrorResponse("Token invalide"));
             }
 
             if (request.getNewPassword() == null || request.getNewPassword().length() < 6) {
                 return ResponseEntity.badRequest()
-                    .body(createErrorResponse("Le mot de passe doit contenir au moins 6 caractères"));
+                        .body(createErrorResponse("Le mot de passe doit contenir au moins 6 caractères"));
             }
 
             passwordResetService.resetPassword(request.getToken(), request.getNewPassword());
-            
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Votre mot de passe a été modifié avec succès");
-            
+
             return ResponseEntity.ok(response);
-            
+
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest()
-                .body(createErrorResponse(e.getMessage()));
+                    .body(createErrorResponse(e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
-                .body(createErrorResponse("Erreur lors de la réinitialisation du mot de passe"));
+                    .body(createErrorResponse("Erreur lors de la réinitialisation du mot de passe"));
         }
     }
 
@@ -74,16 +74,16 @@ public class PasswordResetController {
     public ResponseEntity<?> validateToken(@RequestParam String token) {
         try {
             boolean isValid = passwordResetService.validateToken(token);
-            
+
             Map<String, Object> response = new HashMap<>();
             response.put("valid", isValid);
-            
+
             if (!isValid) {
                 response.put("message", "Le lien est invalide ou expiré");
             }
-            
+
             return ResponseEntity.ok(response);
-            
+
         } catch (Exception e) {
             Map<String, Object> response = new HashMap<>();
             response.put("valid", false);
