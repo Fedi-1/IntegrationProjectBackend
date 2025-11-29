@@ -45,9 +45,15 @@ public class SupportController {
      * GET /api/support/tickets/user/{userId}
      */
     @GetMapping("/tickets/user/{userId}")
-    public ResponseEntity<List<SupportTicketDTO>> getUserTickets(@PathVariable Long userId) {
-        List<SupportTicketDTO> tickets = supportService.getUserTickets(userId);
-        return ResponseEntity.ok(tickets);
+    public ResponseEntity<?> getUserTickets(@PathVariable Long userId) {
+        try {
+            List<SupportTicketDTO> tickets = supportService.getUserTickets(userId);
+            return ResponseEntity.ok(tickets);
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new AdminResponse(false, "Error retrieving tickets: " + e.getMessage()));
+        }
     }
 
     /**

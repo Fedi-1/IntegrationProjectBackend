@@ -53,13 +53,19 @@ public class SupportService {
      * Get all tickets for a user
      */
     public List<SupportTicketDTO> getUserTickets(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        try {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
-        List<SupportTicket> tickets = ticketRepository.findByCreatedByOrderByUpdatedAtDesc(user);
-        return tickets.stream()
-                .map(ticket -> convertToDTO(ticket, false))
-                .collect(Collectors.toList());
+            List<SupportTicket> tickets = ticketRepository.findByCreatedByOrderByUpdatedAtDesc(user);
+            return tickets.stream()
+                    .map(ticket -> convertToDTO(ticket, false))
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            System.err.println("Error getting user tickets: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to retrieve tickets: " + e.getMessage(), e);
+        }
     }
 
     /**
