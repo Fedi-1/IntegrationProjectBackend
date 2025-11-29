@@ -2,6 +2,7 @@ package com.example.IntegrationProjectBackend.dtos;
 
 import com.example.IntegrationProjectBackend.models.TicketPriority;
 import com.example.IntegrationProjectBackend.models.TicketStatus;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,8 +16,13 @@ public class SupportTicketDTO {
     private Long createdById;
     private String createdByName;
     private String createdByEmail;
+
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
+
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime updatedAt;
+
     private int messageCount;
     private List<SupportMessageDTO> messages;
     private String userName; // For admin view
